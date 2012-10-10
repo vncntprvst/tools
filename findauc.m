@@ -1,4 +1,4 @@
-function [auc,slopes,peaksdft]=findauc(filename,dataaligned,dirs)
+function [auc,slopes,peaksdft,modulationinfo]=findauc(filename,dataaligned,dirs)
 % get area under curve for all or selected direction
 % auc is computed for a continuous region above 20% of peak response, from
 % point that recah threshold to peak
@@ -7,7 +7,13 @@ global directory slash
 
 % tasktype=get(findobj('Tag','taskdisplay'),'String');
 mstart= str2double(get(findobj('Tag','msbefore'),'String'));
+if isnan(mstart)
+    mstart=1000;
+end
 mstop= str2double(get(findobj('Tag','msafter'),'String'));
+if isnan(mstop)
+    mstop=500;
+end
 
 %% load alignement file if necessary
 %filename='R113L6A2_18900';
@@ -19,16 +25,21 @@ end
 %% define which dir
 if strcmp(dirs,'all')
     bestdirs=find(~cellfun(@isempty, {dataaligned.alignidx}));
-else strcmp(dirs,'active')
+elseif strcmp(dirs,'active')
     %based on h stats
     filehstat=arrayfun(@(x) sum(x{:}.h), {dataaligned(~cellfun(@isempty, {dataaligned.stats})).stats});
-    bestdirs=find(filehstat==max(filehstat));
+    bestdirs=find(filehstat);%==max(filehstat));
+elseif strcmp(dirs,'best')
+            gooddirs=find(arrayfun(@(x) nansum(x{:}.h), {dataaligned(~cellfun(@isempty, {dataaligned.stats})).stats}));
+            maxmeandiffs=arrayfun(@(x) max(x{:}.p), {dataaligned(gooddirs).stats});
+            bestdirs=gooddirs(maxmeandiffs==max(maxmeandiffs));
 end
 
 %% compute auc and slope
 auc=nan(1,length(bestdirs));
 slopes=nan(1,length(bestdirs));
 peaksdft=nan(1,length(bestdirs));
+modulationinfo=cell(1,length(bestdirs));
 for showdirs=1:length(bestdirs)
     bestdir=bestdirs(showdirs);
     aligntime=dataaligned(1,bestdir).alignidx;
@@ -59,48 +70,16 @@ for showdirs=1:length(bestdirs)
         % see raststats for description of time windows
         
         baseline = timesmat(1,1)-300 : timesmat(1,1)-1;   %300 ms to 1ms before cue
-        %
-        %         %150ms period of visual response
-        %         postcue = timesmat(1,1)+51 : timesmat(1,1)+150; %50ms to 150ms after cue presentation
-        %
-        %         %100ms of pre-eye movement period
-        %         presac = timesmat(2,1)-100 : timesmat(2,1)-1; %100ms before sac initation
-        %
-        %         %100ms of eye movement period
-        %         postsac = timesmat(2,1)+1 : timesmat(2,1)+100; %100ms before sac initation
-        %
-        %         %perisactime
-        %         perisac = timesmat(2,1)-50 : timesmat(2,1)+50; %100ms around sac initation
-        %
-        %         if strcmp(tasktype{:},'memguided') % || strcmp(tasktype,'vg_saccades')
-        %             delay=timesmat(3,2)-300 : timesmat(3,2)-1;
-        %         elseif strcmp(tasktype{:}, 'st_saccades') || strcmp(tasktype{:}, 'tokens')
-        %             delay=timesmat(2,1)-400 : timesmat(2,1)-101;
-        %         else
-        %             delay=0;
-        %         end
-        %         %make changes above for gapstop
-        
-        %conversion to firing rate (since epochs are different
-        %durations)
-        
         
         if ~isnantrial{showdirs}(num_trials)
-            %             allpostcue(num_trials) = (sum(bdrasters(num_trials, postcue))/length(postcue))*1000;
             allbaseline(num_trials) = (nansum(bdrasters(num_trials, baseline))/length(baseline))*1000;
             endfix(num_trials)=baseline(end);
-            %             allpresac(num_trials) = (sum(bdrasters(num_trials, presac))/length(presac))*1000;
-            %             allpostsac(num_trials) = (sum(bdrasters(num_trials, postsac))/length(postsac))*1000;
-            %             allperisac(num_trials) = (sum(bdrasters(num_trials, perisac))/length(perisac))*1000;
-            %             if delay
-            %                 alldelay(num_trials) = (sum(bdrasters(num_trials, delay))/length(delay))*1000;
-            %             end
         end
         
     end
     %% threshold activity
     %fixation period noise
-    fixnoise = max(mean(allbaseline(~isnan(allbaseline))) + 3*std(allbaseline(~isnan(allbaseline))),1); % that is to say, if fixnoise is 0, set it to 1
+    fixnoise = max(mean(allbaseline(~isnan(allbaseline))) + 2*std(allbaseline(~isnan(allbaseline))),1); % that is to say, if fixnoise is 0, set it to 1
     %default threshold at 0.2 * peak response was too high
     activsum=nansum(bdrasters);
     activsdf=spike_density(activsum,15)./size(bdrasters,1);
@@ -112,12 +91,31 @@ for showdirs=1:length(bestdirs)
     end
     % presumed peak time
     ppkt=find(activsdf(aligntime-400:aligntime+200)==max(activsdf(aligntime-400:aligntime+200)),1)+aligntime-401;
-    % threshold crossing time
-    thdcrosst=ppkt-find(activsdf(ppkt:-1:1)<fixnoise,1)+1;
+    %% compute lead time
+%     The criterion for significant modulation was set at a discharge frequency 
+%     (in at least two successive 5 ms bins) more than 2 standard deviations
+%     above or below the mean level of discharge in a 200 ms (40 bins) 
+%     ‘control’ period immediately prior to the visual event or saccade onset.
+%     Onset latency was calculated to the leading edge of the first significant bin.
+leadtime=ppkt;
+while logical(sum(find(activsdf(leadtime-4:leadtime)>fixnoise)))
+    leadtime=leadtime-1;
+end
+    %leadtime=ppkt-find(activsdf(ppkt:-1:1)<fixnoise,1)+1;
+    timetoonset=aligntime-leadtime;
+        % assess ramp: if multiple threshold cross - not simple ramp up or
+        % down
+       pre_peaks=find(activsdf(leadtime:-1:round(median(endfix(endfix>0))))>fixnoise);
+       if ~isempty(pre_peaks)
+           slopeshape='wobbly';
+       else
+           slopeshape='smooth';
+       end
+    modulationinfo(showdirs,1:3)={timetoonset,aligntime-ppkt,slopeshape};
     %local noise
-    locnoise = median(activsdf(thdcrosst-60:thdcrosst)) + 2*std(activsdf(thdcrosst-60:thdcrosst)); %relaxed criteria because bursts generate high std
+    locnoise = median(activsdf(leadtime-60:leadtime)) + 2*std(activsdf(leadtime-60:leadtime)); %relaxed criteria because bursts generate high std
     if ceil(locnoise)>floor(activsdf(ppkt))
-        locnoise = 3*std(activsdf(thdcrosst-60:thdcrosst));
+        locnoise = 3*std(activsdf(leadtime-60:leadtime));
     end
     if ~locnoise
         peaksdft(showdirs)=nan(1,1);
@@ -189,5 +187,11 @@ for showdirs=1:length(bestdirs)
     else
         slopes(showdirs)=0;
     end
+    
+
+    
+
+
+    
 end
 end
