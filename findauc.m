@@ -117,7 +117,7 @@ end
     if ceil(locnoise)>floor(activsdf(ppkt))
         locnoise = 3*std(activsdf(leadtime-60:leadtime));
     end
-    if ~locnoise
+    if isnan(locnoise) || ~locnoise
         peaksdft(showdirs)=nan(1,1);
         auc(showdirs)=nan(1,1);
         slopes(showdirs)=nan(1,1);

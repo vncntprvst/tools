@@ -13,6 +13,8 @@ if strcmp(filename(1),'R')
     procdir=[directory,'processed',slash,'Rigel',slash];
 elseif strcmp(filename(1),'S')
     procdir=[directory,'processed',slash,'Sixx',slash];
+elseif strcmp(filename(1),'H')
+    procdir=[directory,'processed',slash,'Hilda',slash];
 end
 load([procdir,filename,'.mat']);
 %% get directions
@@ -38,11 +40,12 @@ for showdirs=1:length(bestdirs)
     %dircodes=[0 1 2 3 4 5 6 7 8];
     bdtrials=dataaligned(1,bestdir).trials;
     
-    
+    if ~isempty(bdtrials)
     %% get saccade durations for those trials
     alldurs=reshape({saccadeInfo.duration},size(saccadeInfo)); % all directions found in saccadeInfo
     allgoodsacs=~cellfun('isempty',reshape({saccadeInfo.latency},size(saccadeInfo)));
     % if saccade detection corrected, there may two 'good' saccades
+    
     if max(sum(allgoodsacs,2))>1
         twogoods=find(sum(allgoodsacs,2)>1);
         for dblsac=1:length(twogoods)
@@ -51,7 +54,8 @@ for showdirs=1:length(bestdirs)
     end
     bddurs=alldurs(bdtrials,:);
     bdgoodsacs=allgoodsacs(bdtrials,:);
-    allgooddurs=cell2mat(bddurs(bdgoodsacs));
+    bddurs=transpose(bddurs);
+    allgooddurs=cell2mat(bddurs(transpose(bdgoodsacs)));
     
     
     %% get rasters and velocities for the relevant trials.
@@ -152,6 +156,7 @@ for showdirs=1:length(bestdirs)
         %set(gca,'Xtick',)
         %set(gca,'Xticklabel',)
         delete(crosscolfigh);
+    end
     end
 end
 end
