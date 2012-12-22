@@ -4,7 +4,8 @@
 clear all
 %% First getting list of recordings, location on grid, and depth
 
-listprimdir=dir('B:\data\Recordings\Rigel\*A');
+listprimdir=dir('E:\data\Recordings\Rigel\*A');
+listprimdir=listprimdir(12:14);
 numfiles1 = length(listprimdir);
 listnames=cell(1,numfiles1);
 listloc=cell(1,numfiles1);
