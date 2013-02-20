@@ -67,6 +67,7 @@ numrast=length(datalign);
                 %150ms period of visual response
                 postcue = timesmat(1,1)+51 : timesmat(1,1)+150; %50ms to 150ms after cue presentation
                 
+                if ~sum(isnan(timesmat(2,:)))
                 %100ms of pre-eye movement period
                 presac = timesmat(2,1)-100 : timesmat(2,1)-1; %100ms before sac initation
                 
@@ -83,8 +84,12 @@ numrast=length(datalign);
                 else
                     delay=0;
                 end
-                %make changes above for gapstop
                 
+                %make changes above for gapstop
+                else
+                [presac,postsac,perisac]=deal(1);
+                delay=0;
+                end
                 %conversion to firing rate (since epochs are different
                 %durations)              
                 
