@@ -94,7 +94,7 @@ numrast=length(datalign);
                 %durations)              
                 
                 
-                if ~isnantrial{alignmtnum}(num_trials)
+                if ~isnantrial{alignmtnum}(num_trials) && ~isnan(timesmat(2,1)) %% need data, and eye movement (or stop ...)
                     allpostcue(num_trials) = (nansum(rasters(num_trials, postcue))/length(postcue))*1000;
                     allbaseline(num_trials) = (nansum(rasters(num_trials, baseline))/length(baseline))*1000;
                     allpresac(num_trials) = (nansum(rasters(num_trials, presac))/length(presac))*1000;
