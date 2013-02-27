@@ -1,4 +1,4 @@
-function [peakcct,peaksdf]=crosscorel(filename,dataaligned,dirs,plotf)
+function [peakcct,peaksdf,tbtdircor,tbtdirmsact,tbtdirmsdur]=crosscorel(filename,dataaligned,dirs,plotf)
 global directory slash
 
 %% load alignement file if necessary
@@ -34,6 +34,9 @@ elseif strcmp(dirs,'active')
 end
 peakcct=nan(length(bestdirs),1);
 peaksdf=nan(length(bestdirs),1);
+tbtdircor=[];
+tbtdirmsact=[];
+tbtdirmsdur=[];
 for showdirs=1:length(bestdirs)
     bestdir=bestdirs(showdirs);
     bestdirname=dataaligned(1,bestdirs(showdirs)).dir;
@@ -61,6 +64,9 @@ for showdirs=1:length(bestdirs)
     %% get rasters and velocities for the relevant trials.
     bdeyevel=dataaligned(1,bestdir).eyevel;
     bdrasters=dataaligned(1,bestdir).rasters;
+    bdamps=dataaligned(1,bestdir).amplitudes;
+    bdduration=dataaligned(1,bestdir).allgreyareas;
+
     % compute time window
     aligntime=dataaligned(1,bestdir).alignidx;
     timewin=[aligntime*ones(size(bdeyevel,1),1) ...
@@ -74,7 +80,7 @@ for showdirs=1:length(bestdirs)
     end
     
     %% sums and sdf
-    startwindow=aligntime-200;
+    startwindow=aligntime;%-200
     if startwindow<1
         startwindow=1;
     end
@@ -83,6 +89,49 @@ for showdirs=1:length(bestdirs)
         endwindow=length(bdeyevel);
     end
     
+    trsaccrosscol=cell(size(bdeyevel,1),1);
+    trsaccrosscol2=nan(size(bdeyevel,1),1);
+    trpresaccrosscol=cell(size(bdeyevel,1),1);
+    sduration=nan(size(bdeyevel,1),1);
+    mseyevel=nan(size(bdeyevel,1),1);
+    mtrsacactiv=nan(size(bdeyevel,1),1);
+    mtrpresacactiv=nan(size(bdeyevel,1),1);
+    %trial by trial analysis
+    for trnb=1:size(bdeyevel,1)
+        sduration(trnb,1)=bdduration{1,trnb}(2,2)-bdduration{1,trnb}(2,1);
+        mseyevel(trnb,1)=nanmean(bdeyevel(trnb,startwindow:startwindow+sduration(trnb,1)-1));
+        trsacactiv=spike_density(bdrasters(trnb,startwindow:startwindow+sduration(trnb,1)-1),15);
+        trsacactiv=trsacactiv./max(trsacactiv);
+        trsacactiv(isnan(trsacactiv))=0;
+        mtrsacactiv(trnb,1)=nanmean(trsacactiv);
+        trpresacactiv=spike_density(bdrasters(trnb,startwindow-200:startwindow),15);
+        trpresacactiv=trpresacactiv./max(trpresacactiv);
+        trpresacactiv(isnan(trpresacactiv))=0;
+        mtrpresacactiv(trnb)=nanmean(trpresacactiv);
+        trsaccrosscol(trnb)={xcorr(trsacactiv,...
+            bdeyevel(trnb,startwindow:startwindow+sduration(trnb,1)-1),'coeff')};
+        trsaccrosscolall=corrcoef(([trsacactiv; ...
+            bdeyevel(trnb,startwindow:startwindow+sduration(trnb,1)-1)])');
+        trsaccrosscol2(trnb)=trsaccrosscolall(1,2);
+        trpresaccrosscol(trnb)={xcorr(trpresacactiv,...
+            bdeyevel(trnb,startwindow-200:startwindow),'coeff')};
+    end
+    %corrcoef([mtrsacactiv mseyevel])
+    tbtdircor=[tbtdircor;trsaccrosscol2];
+    tbtdirmsact=[tbtdirmsact;mtrpresacactiv];
+    tbtdirmsdur=[tbtdirmsdur;sduration];
+    
+    mtrsaccrosscol=cellfun(@(x) nanmean(x), trsaccrosscol);
+    mtrsaccrosscol(isnan(mtrsaccrosscol))=0;
+    mean(mtrsaccrosscol);
+    std(mtrsaccrosscol);
+    
+    mtrpresaccrosscol=cellfun(@(x) nanmean(x), trpresaccrosscol);
+    mtrpresaccrosscol(isnan(mtrpresaccrosscol))=0;
+    mean(mtrpresaccrosscol);
+    std(mtrpresaccrosscol);
+    % end trial by trial
+%% 
     meaneyevel=nansum(bdeyevel(:,startwindow:endwindow))./size(bdrasters,1);
     activsum=nansum(bdrasters(:,startwindow:endwindow));
     activsdf=spike_density(activsum,15)./size(bdrasters,1);
@@ -159,4 +208,5 @@ for showdirs=1:length(bestdirs)
     end
     end
 end
+
 end
