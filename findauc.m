@@ -70,7 +70,9 @@ for showdirs=1:length(bestdirs)
         % see raststats for description of time windows
         
         baseline = timesmat(1,1)-300 : timesmat(1,1)-1;   %300 ms to 1ms before cue
-        
+        if isnan(baseline)
+            return
+        end
         if ~isnantrial{showdirs}(num_trials)
             allbaseline(num_trials) = (nansum(bdrasters(num_trials, baseline))/length(baseline))*1000;
             endfix(num_trials)=baseline(end);

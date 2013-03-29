@@ -16,7 +16,7 @@ elseif strcmp(filename(1),'S')
 elseif strcmp(filename(1),'H')
     procdir=[directory,'processed',slash,'Hilda',slash];
 end
-load([procdir,filename,'.mat']);
+load([procdir,filename,'.mat'],'saccadeInfo');
 %% get directions
 for rstplt=1:length(dataaligned)
     dataaligned(1,rstplt).dir=getdir_fpos(dataaligned,rstplt); %#ok<AGROW>

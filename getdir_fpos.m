@@ -50,3 +50,8 @@ function [dir]=getdir_fpos(datalg,dirnb)
     else
         dir='upward';
     end
+    
+    if isnan(sacdeg)
+        dir='none';
+    end
+end
