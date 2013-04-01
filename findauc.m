@@ -1,4 +1,4 @@
-function [auc,slopes,peaksdft,modulationinfo]=findauc(filename,dataaligned,dirs)
+function [auc,slopes,peaksdft,nadirsdft,modulationinfo]=findauc(filename,dataaligned,dirs)
 % get area under curve for all or selected direction
 % auc is computed for a continuous region above 20% of peak response, from
 % point that recah threshold to peak
@@ -39,6 +39,8 @@ end
 auc=nan(1,length(bestdirs));
 slopes=nan(1,length(bestdirs));
 peaksdft=nan(1,length(bestdirs));
+nadirsdft=nan(1,length(bestdirs));
+
 modulationinfo=cell(1,length(bestdirs));
 for showdirs=1:length(bestdirs)
     bestdir=bestdirs(showdirs);
@@ -155,12 +157,14 @@ end
         auc(showdirs)=0;
     end
     % if declining activity
-    if activsdf(round(median(endfix(endfix>0))))> activsdf(aligntime)
+        
+    if activsdf(round(median(endfix(endfix>0))))> activsdf(aligntime) && ...
+            (peaksdft(showdirs)+aligntime > aligntime || peaksdft(showdirs)+aligntime < round(median(endfix(endfix>0))))
         thdactiv=activsdf(find(peakarea,1))- ... 
-            activsdf(find(peakarea,1): find(activsdf(find(peakarea,1):aligntime)== ...
-            min(activsdf(find(peakarea,1):aligntime)),1)+find(peakarea,1)-1);
+            activsdf(find(peakarea,1): find(activsdf(find(peakarea,1):aligntime+100)== ...
+            min(activsdf(find(peakarea,1):aligntime+100)),1)+find(peakarea,1)-1);
         if ~isempty(thdactiv)
-        peaksdft(showdirs)=find(thdactiv==max(thdactiv),1)+find(peakarea,1)-1- aligntime;
+        nadirsdft(showdirs)=find(thdactiv==max(thdactiv),1)+find(peakarea,1)-1- aligntime;
         auc(showdirs)=-max(cumsum(thdactiv));
         else
              auc(showdirs)=0;
@@ -168,15 +172,23 @@ end
         if length(thdactiv)==1 %got it wrong
             thdactiv=activsdf(find(peakarea,1):peaksdft(showdirs)+aligntime);
             if ~isempty(thdactiv)
-            peaksdft(showdirs)=(find(activsdf(find(peakarea,1):endlimactiv)== ...
+            nadirsdft(showdirs)=(find(activsdf(find(peakarea,1):endlimactiv)== ...
         max(activsdf(find(peakarea,1):endlimactiv)),1)+find(peakarea,1)-1) - aligntime;
             auc(showdirs)=max(cumsum(thdactiv));
             else
         auc(showdirs)=0;
-    end
+            end
         end
+    elseif activsdf(peaksdft(showdirs)+aligntime)> activsdf(aligntime) && ...
+            (peaksdft(showdirs)+aligntime < aligntime && peaksdft(showdirs)+aligntime > round(median(endfix(endfix>0))))
+        thdactiv=activsdf(find(peakarea,1))- ... 
+            activsdf(find(peakarea,1): find(activsdf(find(peakarea,1):aligntime+100)== ...
+            min(activsdf(find(peakarea,1):aligntime+100)),1)+find(peakarea,1)-1);
+         if ~isempty(thdactiv)
+                nadirsdft(showdirs)=find(thdactiv==max(thdactiv),1)+find(peakarea,1)-1- aligntime;
+         end
     end
-    
+
     %% compute slope
     if ~isempty(thdactiv)
     slopes(showdirs)=round((thdactiv(end)-thdactiv(1))/length(thdactiv)*1000); %in spk/s^e-2
