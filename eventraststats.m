@@ -26,7 +26,8 @@ for alignmtnum=1:numrast+1
     end
     
     if ~isempty(rasters) 
-        if alignmtnum<=numrast
+        if alignmtnum<=numrast % when alignmtnum is numrast+1, that's pooled data
+            
         % have to find isnantrial, since stats have been extracted
         % from rdd_rasters_sdf
         aidx=datalign(alignmtnum).alignidx;
@@ -134,15 +135,19 @@ for alignmtnum=1:numrast+1
             alldelays{alignmtnum}=alldelay(~isnantrial{alignmtnum});
         end
        
-        else
-        allbaselines{alignmtnum}=vertcat(allbaselines{:});
-        allpreevts{alignmtnum}=vertcat(allpreevts{:});
-        allpostevts{alignmtnum}=vertcat(allpostevts{:});
-        allperievts{alignmtnum}=vertcat(allperievts{:});
-        if delay
-            alldelays{alignmtnum}=vertcat(alldelays{:});
-        end
-        if size(allbaselines{alignmtnum},1)<7
+        else %pooled data
+            try
+                allbaselines{alignmtnum}=vertcat(allbaselines{:});
+                allpreevts{alignmtnum}=vertcat(allpreevts{:});
+                allpostevts{alignmtnum}=vertcat(allpostevts{:});
+                allperievts{alignmtnum}=vertcat(allperievts{:});
+                if delay
+                    alldelays{alignmtnum}=vertcat(alldelays{:});
+                end
+            catch 
+                continue
+            end
+        if size(allbaselines{alignmtnum},1)<7 % minimum number of trials to be considered
             continue
         end
         end
