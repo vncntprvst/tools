@@ -196,6 +196,7 @@ for alignmtnum=1:numrast+1
     p_rmanov(alignmtnum)=p_anovmr(2);
     if length(p_rmanov)>1 && p_rmanov(2)<0.05 %p(1) is inter-trial comparison, p(2) inter-group
         try
+            %note on multcompare: check use of Tukey Kramer ctype
             [~,~,friedstats] = friedman(samplemat{alignmtnum}',1,'off');
             mcstats{alignmtnum}=multcompare(friedstats,'display','off');
         catch % won't work if just one good trial. Check friedman(cellfun(@(x) size(x,2)<2, samplemat)
