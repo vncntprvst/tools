@@ -47,8 +47,9 @@ for showdirs=1:length(bestdirs)
     %% get saccade durations for those trials
     alldurs=reshape({saccadeInfo.duration},size(saccadeInfo)); % all directions found in saccadeInfo
     allgoodsacs=~cellfun('isempty',reshape({saccadeInfo.latency},size(saccadeInfo)));
+    %removing bad trials
+    allgoodsacs(logical(allbad),:)=0;
     % if saccade detection corrected, there may two 'good' saccades
-    
     if max(sum(allgoodsacs,2))>1
         twogoods=find(sum(allgoodsacs,2)>1);
         for dblsac=1:length(twogoods)
