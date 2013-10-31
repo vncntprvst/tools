@@ -1,4 +1,4 @@
-function [cohrfreq,cohrmag,SFcorr,trials]=SFC(filename,alignment,cluster,preblocks,postblocks,option)
+function [cohrfreq,cohrmag,SFcorr,trials]=SFC(filename,alignment,cluster,corrwind,preblocks,postblocks,option)
 %Spike Field Coeherence analysis
 % returns correlation/coherence between spikes and LFP signals in temporal 
 % domain (cross correlation) and frequency domain (spike-field coherence) 
@@ -10,7 +10,7 @@ function [cohrfreq,cohrmag,SFcorr,trials]=SFC(filename,alignment,cluster,prebloc
 
 %comparisons: either comparing multiple files, or one file over multiple conditions
 if option==1
-    load([filename '_REX_' alignment '_c' cluster '.mat'])
+    load(filename);
     numcomp=size(dataaligned,2);
     trials=zeros(1,numcomp);
     comptype='alignement';
@@ -65,7 +65,7 @@ for ldfl=1:numcomp
         end
     else
         % get sampling rate
-        load([filename 'f']);
+        load([cell2mat(regexp(filename,'^\w+_\d+','match')) 'f']);
         varlist=who;
         eval(['recSR =' cell2mat(varlist(~cellfun(@isempty ,(cellfun(@(x) strfind(x,filename(1)), varlist, 'UniformOutput', false)))))]);
         clear(cell2mat(varlist(~cellfun(@isempty ,(cellfun(@(x) strfind(x,filename(1)), varlist, 'UniformOutput', false))))));
@@ -139,7 +139,6 @@ else
     duration=epochsz*timeunit;
     timevector = (1:epochsz)*timeunit;
     df=1/duration;
-    corrwind=100;
     cohrfreq{2,ldfl} = (-epochsz/2:epochsz/2-1)*df;
     MUAfourier= zeros(trials(ldfl),length(cohrfreq{2,ldfl}));
     LFPfourier= zeros(trials(ldfl),length(cohrfreq{2,ldfl}));
@@ -154,8 +153,10 @@ else
         LFPMUAcorr(trnm,:)=xcorr(trspikes,trLFP,corrwind,'coeff');% +/- 100ms sliding window coeff for normalization
     end
     
-    % mean cross-correlation 
-    SFcorr{ldfl}=nanmean(LFPMUAcorr);
+    % cross-correlation 
+%     SFcorr{ldfl}=nansum(LFPMUAcorr);
+%     SFcorr{ldfl}=fullgauss_filtconv(SFcorr{ldfl},10,0)./(trials(ldfl)-sum(isnan(sum(LFPMUAcorr,2))));
+      SFcorr{ldfl}=nanmean(LFPMUAcorr);
     
     %   Power spectra and cross spectrum.
     [CS_MUA_MUA, CS_MUA_LFP, CS_LFP_LFP] = deal(zeros(1,length(cohrfreq{2,ldfl})));
