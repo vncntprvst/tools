@@ -68,8 +68,7 @@ for cmpn=1:numcomp
     SpikeData{cmpn}=SpikeData{cmpn}(:,dataaligned(1,cmpn).alignidx+epochrg(1):...
         dataaligned(1,cmpn).alignidx+epochrg(2)-1);
 
-    %% get spikes data     
-    %pre-allocate
+    %% pre-allocate
     MUAfourier= zeros(trials(cmpn),length(cohrfreq{2,cmpn}));
     LFPfourier= zeros(trials(cmpn),length(cohrfreq{2,cmpn}));
     LFPMUAxcorr= zeros(trials(cmpn),corrwind/binwidth*2+1);
@@ -77,6 +76,8 @@ for cmpn=1:numcomp
     fullSTA=nan(trials(cmpn),recSR/1000*corrwind/binwidth*2+1);
     TrialCoher=zeros(epochsz/binwidth/2+1,trials(cmpn));
     trials(cmpn)=size(LFPData{cmpn},1);
+    
+    %% downsampling and binning
     for trnm=1:trials(cmpn)
         % downsampling LFP to match bin size if necessary (e.g., 500Hz for 2ms bins)
         if (1/timeunit)/recSR ~= 1
@@ -90,9 +91,8 @@ for cmpn=1:numcomp
 %             sparsepoch = sparse(1:LFPepochsz,bin,LFPData{cmpn}(trnm,:));
 %             bLFP=full(sum(sparsepoch)./sum(sparsepoch~=0));
 %             bLFP(isnan(bLFP))=0;
-        
-        
-        %% old method to extract epoch from rasters
+             
+        %% old method to extract epoch's spikes
 %         trialepoch=dataaligned(1,cmpn).rasters(trnm,dataaligned(1,cmpn).alignidx+epochrg(1):dataaligned(1,cmpn).alignidx+epochrg(2)-1);
 %         
 %         % bin spikes if necessary
@@ -120,7 +120,7 @@ for cmpn=1:numcomp
         end
     end
 
-     
+    %% trial by trial treatment: sum / xcorr / fft 
     for trnm=1:trials(cmpn)
         % spikes for period of interest in that trial
         trspikes=spikes{cmpn}(epochsz/binwidth*(trnm-1)+1:epochsz/binwidth*trnm);
