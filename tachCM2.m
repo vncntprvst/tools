@@ -61,6 +61,8 @@ function [xctr xtach tach rPTc rPTe] = tachCM2(data, wbin, rect, crng)
 % See also: tachCM1
 
 % Emilio Salinas, May 2011
+% VP - slight edit on elimination of values before final upswing, for
+% better detection xctr with noisy data, Nov 2013
 
  %
  % default values
@@ -144,10 +146,11 @@ function [xctr xtach tach rPTc rPTe] = tachCM2(data, wbin, rect, crng)
  %
  % eliminate values before final upswing
  %
- pmax = max(rPTc);
- imax = find(rPTc == pmax, 1, 'first');
+ lastnegv=find(rPTc < 0, 1, 'last'); %last negative value
+ pmax = max(rPTc(lastnegv:end));
+ imax = lastnegv + find(rPTc(lastnegv:end) == pmax, 1, 'first') -1;
  if rect > 0
-     izero = find(rPTc(1:imax) < 0, 1, 'last');
+     izero = imax - find(rPTc(imax:-1:1) < 0, 1, 'first') +1;
      tach(1:izero) = 0;
  end
 
