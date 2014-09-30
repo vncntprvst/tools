@@ -109,7 +109,7 @@ for showdirs=1:length(bestdirs)
     timetoonset=aligntime-leadtime;
     % assess ramp: if multiple threshold cross - not simple ramp up or
     % down
-    pre_peaks=find(activsdf(leadtime:-1:round(median(endfix(endfix>0))))>fixnoise);
+    pre_peaks=find(activsdf(leadtime:-1:round(median(endfix(endfix>0))))>fixnoise, 1);
     if ~isempty(pre_peaks)
         slopeshape='wobbly';
     else
@@ -128,9 +128,9 @@ for showdirs=1:length(bestdirs)
         continue
     end
     %restrict to period of interest as much as possible
-    fixtosac=zeros(1,length(activsdf));
-    fixtosac(min(ppkt,round(median(endfix(endfix>0)))):max(aligntime,ppkt))=activsdf(min(ppkt,round(median(endfix(endfix>0)))):max(aligntime,ppkt));
-    peakarea=bwlabel(fixtosac>locnoise);
+    fixtoppkt=zeros(1,length(activsdf));
+    fixtoppkt(min(ppkt,round(median(endfix(endfix>0)))):ppkt)=activsdf(min(ppkt,round(median(endfix(endfix>0)))):ppkt);
+    peakarea=bwlabel(fixtoppkt>locnoise);
     
     %% if more than one region, select the one with highest activity
     if max(peakarea)>1
@@ -145,18 +145,25 @@ for showdirs=1:length(bestdirs)
     % limit of active period
     endlimactiv=find(peakarea,1)+find(activsdf(find(peakarea,1):end)<locnoise,1);
     
-    %% find peak sdf time
+    %% find peak sdf time (time referenced to alignment time)
     peaksdft(showdirs)=(find(activsdf(find(peakarea,1):endlimactiv)== ...
         max(activsdf(find(peakarea,1):endlimactiv)),1)+find(peakarea,1)-1) - aligntime;
     
-    thdactiv=activsdf(find(peakarea,1):peaksdft(showdirs)+aligntime);
+    %% find nadir
+    nadirsdft(showdirs) = find(activsdf(min(ppkt,round(median(endfix(endfix>0)))):endlimactiv)== ...
+        min(activsdf(min(ppkt,round(median(endfix(endfix>0)))):endlimactiv)),1)+min(ppkt,round(median(endfix(endfix>0)))) - aligntime;
+     
     %% compute auc of peak area
+    thdactiv=activsdf(find(peakarea,1):peaksdft(showdirs)+aligntime);
     if ~isempty(thdactiv)
-        auc(showdirs)=round(max(cumsum(activsdf(find(peakarea,1):find(peakarea,1,'last')))));
+        peakdata=activsdf(find(peakarea,1):find(peakarea,1,'last'));
+        normpeakdata=peakdata/median(peakdata); normpeakdata=normpeakdata./max(normpeakdata)*100;
+        auc(showdirs)=round(max(cumsum(normpeakdata))); 
     else
         auc(showdirs)=0;
     end
-    % if declining activity
+    
+    %% if declining activity
     
     if activsdf(round(median(endfix(endfix>0))))> activsdf(aligntime) && ...
             (peaksdft(showdirs)+aligntime > aligntime || peaksdft(showdirs)+aligntime < round(median(endfix(endfix>0))))
