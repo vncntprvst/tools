@@ -1,11 +1,13 @@
-%example of raster averaging and stat test
+function rastplotstat(rasters,fsigma,twind_one,twin_two)
 
-fsigma=10;
-foo=rasters(~isnantrial{cnp},:);
-convrasters=NaN(size(foo,1),stop-start+2*fsigma+1);
+%raster averaging, stat test on two regions and plot
+
+
+
+convrasters=NaN(size(rasters,1),stop-start+2*fsigma+1);
 
 for rast=1:sum(~isnantrial{cnp})
-    convrasters(rast,:)=fullgauss_filtconv(foo(rast,start-fsigma:stop+fsigma),fsigma,0);
+    convrasters(rast,:)=fullgauss_filtconv(rasters(rast,start-fsigma:stop+fsigma),fsigma,0);
 end
 
 convrasters=convrasters(:,fsigma+1:end-fsigma);
