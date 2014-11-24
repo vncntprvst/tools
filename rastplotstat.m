@@ -35,13 +35,16 @@ h=p<0.01;
 
 %% plots
 if plotwind
-    sdfplot=figure;
-    plot(convrasters_one,'b');
+    figure;
+    plot([1:length(convrasters_one)],convrasters_one,'b');
     hold on;
-    plot(convrasters_two,'r');
+    plot([length(convrasters_one)+2:(length(convrasters_one)+1+length(convrasters_two))],convrasters_two,'r');
     hold off;
     ylim=get(gca,'ylim');
     set(gca,'ylim',[0 ylim(2)+1]);
-    legend('pre','post');
+    if h
+        text(5,3,['sign = ' num2str(sign)])
+    end
+    legend('pre','post','location','SouthEast');
 end
 end

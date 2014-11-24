@@ -1,0 +1,24 @@
+Simple Clust v0.5
+
+jan 2013, Jakob Voigts (jvoigts@mit.edu)
+
+
+
+Disclaimer: I wrote this software for my own use, and little time was spent testing it in different scenarios, or in making the code pretty. 
+Simpleclust is released under the GNU GPL.
+
+Get the lastest version of simple clust on github:
+https://github.com/moorelab/simpleclust
+
+Or download the latest release as zip archive:
+https://github.com/moorelab/simpleclust/archive/master.zip
+
+
+Manual:
+run simple_clust.m in matlab to start.
+See manual.png for a (slightly outdated) function overview.
+
+Also, check my website at www.mit.edu/~jvoigts for posts that explain features of simpleclust 
+
+See the header of simple_clust.m for a feature list and some more info.
+
