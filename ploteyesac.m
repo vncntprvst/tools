@@ -19,7 +19,9 @@ for i=1:length(trials)
     alltimes={saccadeInfo(trials(i),:).starttime};
     alltimes=cell2mat(alltimes(~cellfun(@isempty,alltimes)));
     plot(alltimes,5*ones(1,length(alltimes)),'dk');
-    plot(alltimes(goodsac),5,'dr');
+    if ~isempty(goodsac)
+        plot(alltimes(goodsac),5,'dr');
+    end
     title(info(i,:));
     hold off;
 end
