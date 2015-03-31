@@ -33,7 +33,6 @@ if strcmp(Ardu_serial_input.Status,'closed'), fopen(Ardu_serial_input); end
 %% Read the response
 session.MouseData.rew=0;
 session.MouseData.frontcount=0;
-session.MouseData.fronttime=[];
 session.MouseData.leftcount=0;
 session.MouseData.lefttime=[];
 session.MouseData.rightcount=0;
@@ -47,17 +46,7 @@ start(timer_ardu);
 
 disp ('Connection established.');
 
-% while session.gameon == true && toc < 10
-%     %wait
-% end
-
-% while session.gameon == false;
-% wait(timer_ardu,'finished');
-
-filename='session.mat'
-save(filename,'session');
-% load('session.mat')
-
+if session.gameon == false
 stop(timer_ardu);
 delete(timer_ardu);
 
@@ -67,29 +56,72 @@ delete(Ardu_serial_input);
 clear Ardu_serial_input;
 
 disp ('End of session');
-
-% return
-% end
-
-% figures
-% left port vs right port
-figure
-plot(session.MouseData.lefttime,1:size(session.MouseData.lefttime,1))
-hold on
-plot(session.MouseData.righttime,1:size(session.MouseData.righttime,1))
-legend('left port','right port')
-xlabel('Time')
-ylabel('Reward count')
-
-% time from front panel to reward port
-foo=round(session.MouseData.fronttime.*10);
-bla=mat2cell(round(session.MouseData.lefttime.*10),2);
-cellfun(@(x) x-find(foo(foo<x),'last'), )
-
-for port=1:size(session.MouseData.fronttime,1)
-    fronttoporttime=session.MouseData.lefttime
+end
 
 
 
+
+
+% Use the serial port object to pass data between your main function
+%  and the serial port function ("getNewData").
+
+%% 5. Process the incoming data
+% In this example, we use a loop to plot the data stream that is sent by
+% the USB device.
+
+% A global variable is used to exit the loop
+global PLOTLOOP; PLOTLOOP=1;
+% Initialize data for plotting. "plotWindow" will be the length of the
+%  x-axis in the data plot.
+plotData=zeros(plotWindow);
+newData=[];
+% Create figure for plotting
+pfig = figure;
+% This allows us to stop the test by pressing a key
+set(pfig,'KeyPressFcn', @stopStream); 
+
+% Send commands to the device to start the data stream.
+fprintf(Ardu_serial_input,'START');
+
+while PLOTLOOP
+
+      % wait until we have new data
+      if Ardu_serial_input.UserData.isNew==1
+
+          % get the data from serial port object (data will be row-oriented)    
+          newData=mr.UserData.newData';
+
+          % indicate that data has been read
+          mr.UserData.isNew=0;
+
+          % concatenate new data for plotting
+          plotData=[plotData(size(newData,1)+1:end,:); newData];
+
+          % plot the data
+          plot(pfig,plotData);
+
+          drawnow;
+      end
+
+      % The loop will exit when the user presses return, using the
+      %  KeyPressFcn of the plot window
+
+end
+
+%% 6. Finish & Cleanup
+% Add whatever commands are required for closing your device.
+
+% Send commands to the device stop the data transmission
+fprintf(Ardu_serial_input,'STOP');
+
+% flush the input buffer
+ba=get(Ardu_serial_input,'BytesAvailable');
+if ba > 0, fread(mr,ba); end
+
+% Close the serial port
+fclose(Ardu_serial_input);
+delete(Ardu_serial_input);
+
+return
 
 

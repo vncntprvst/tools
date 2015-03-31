@@ -1,24 +1,46 @@
 function storeDataFromSerial(obj,event,handles)
-global Ardu_serial_input
+global Ardu_serial_input session;
+% sound def
+sounddur=10000;
+s=zeros(sounddur,1);
+for freqval=1:sounddur
+    s(freqval)=sin(-freqval/10);
+    % s(a)=tan(a)*sin(-a/10);
+end
+Freq=20000; %increase value to speed up the sound, decrease to slow it down
+
 try
-    while (get(Ardu_serial_input, 'BytesAvailable')~=0) % && tenzo == true
+    while (get(Ardu_serial_input, 'BytesAvailable')~=0) && session.gameon == true
         % read until terminator
-        sentence = fscanf( Ardu_serial_input, '%s')
+        sentence = fscanf( Ardu_serial_input, '%s');
         %decodes "sentence" seperated (delimted) by commas
-%         decode(sentence);
-        [Dnew, Dcount, Dmsg]=fread(obj)
+        %         decode(sentence);
+        if strcmp(sentence,'OpenLeftSolenoid')
+            session.MouseData.leftcount=session.MouseData.leftcount+1;
+            session.MouseData.rew=session.MouseData.rew+1;
+            session.MouseData.lefttime=...
+                [session.MouseData.lefttime;toc];
+        elseif strcmp(sentence,'OpenRightSolenoid')
+            session.MouseData.rightcount=session.MouseData.rightcount+1;
+            session.MouseData.rew=session.MouseData.rew+1;
+            session.MouseData.righttime=...
+                [session.MouseData.righttime;toc];
+        elseif strcmp(sentence,'Frontpanelexplored') %Front:DoubleReward!
+            %play sound
+%             elapsedTime = toc;
+            soundsc(s,Freq)
+            session.MouseData.frontcount=session.MouseData.frontcount+1;
+%             session.MouseData.rew=session.MouseData.rew+2;
+            session.MouseData.fronttime=...
+                [session.MouseData.frontime;toc];
+        end
         
-        if Ardu_serial_input.UserData.isNew==0
-    % indicate that we have new data
-    Ardu_serial_input.UserData.isNew=1; 
-    Ardu_serial_input.UserData.newData=Dnew;
-    else
-    % If the main loop has not had a chance to process the previous batch
-    % of data, then append this new data to the previous "new" data
-    Ardu_serial_input.UserData.newData=[Ardu_serial_input.UserData.newData Dnew];
-    end
+        if session.MouseData.rew > 200 || toc > 3600
+            session.gameon = false;
+            disp ('Timeout: Connection ended');
+        end
+        
     end
 catch
 end
 end
-
