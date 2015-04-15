@@ -124,6 +124,8 @@ for alignmtnum=1:numrast+1
                     if delay
                         alldelay(num_trials) = (nansum(rasters(num_trials, delay))/length(delay))*1000;
                     end
+                else
+                    isnantrial{alignmtnum}(num_trials)=1;
                 end
             end
             

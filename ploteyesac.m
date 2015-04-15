@@ -1,4 +1,4 @@
-function ploteyesac(trials,filename,info)
+function ploteyesac(filename,trials,info)
 %% quick tool to plot eye positions for a given trial, with detected saccade times
 
 if nargin<3
