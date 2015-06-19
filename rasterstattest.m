@@ -4,13 +4,13 @@ function rastplotstat(rasters,fsigma,twind_one,twin_two)
 
 
 
-convrasters=NaN(size(rasters,1),stop-start+2*fsigma+1);
+convrasters=NaN(size(rasters,1),stop-start+1);
 
 for rast=1:sum(~isnantrial{cnp})
     convrasters(rast,:)=fullgauss_filtconv(rasters(rast,start-fsigma:stop+fsigma),fsigma,0);
 end
 
-convrasters=convrasters(:,fsigma+1:end-fsigma);
+% convrasters=convrasters(:,fsigma+1:end-fsigma);
 
 % convrasters=convrasters(:,1000:1200);
 % lowconvrasters=convrasters./10;

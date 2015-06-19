@@ -13,6 +13,7 @@ function [fitresult, gof] = sigmoidfit(narssdbins, probaresp)
 
 %  MATLAB auto-generated on 15-Nov-2012 00:26:53 by VP
 
+%should use glmfit such as b = glmfit(x,[y n],'binomial','link','probit');
 
 %% Fit: 'sigmoid'.
 [xData, yData] = prepareCurveData( narssdbins, probaresp );

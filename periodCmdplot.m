@@ -94,7 +94,7 @@ end
 % sdf 
 sumall=nansum(earlyspk,1);
 sdf=fullgauss_filtconv(sumall,sigma,0)./ct.*1000;
-sdf=sdf(sigma+1:end-sigma);
+% sdf=sdf(sigma+1:end-sigma);
 maxxlim=max(size(earlyspk,2),max([cellfun(@(x) length(x),earlyith)]));
 set(gca,'xlim',[1 maxxlim]);
 
@@ -134,7 +134,7 @@ end
 % sdf 
 sumall=nansum(lastspk,1);
 sdf=fullgauss_filtconv(sumall,sigma,0)./ct.*1000;
-sdf=sdf(sigma+1:end-sigma);
+% sdf=sdf(sigma+1:end-sigma);
 maxxlim=max(size(lastspk,2),max([cellfun(@(x) length(x),lastith)]));
 set(gca,'xlim',[1 maxxlim]);
 
@@ -176,7 +176,7 @@ end
 % sdf 
 sumall=nansum(earlyspk,1);
 sdf=fullgauss_filtconv(sumall,sigma,0)./nct.*1000;
-sdf=sdf(sigma+1:end-sigma);
+% sdf=sdf(sigma+1:end-sigma);
 maxxlim=max(size(earlyspk,2),max([cellfun(@(x) length(x),earlyith)]));
 set(gca,'xlim',[1 maxxlim]);
 
@@ -216,7 +216,7 @@ end
 % sdf 
 sumall=nansum(lastspk,1);
 sdf=fullgauss_filtconv(sumall,sigma,0)./nct.*1000;
-sdf=sdf(sigma+1:end-sigma);
+% sdf=sdf(sigma+1:end-sigma);
 maxxlim=max(size(lastspk,2),max([cellfun(@(x) length(x),lastith)]));
 set(gca,'xlim',[1 maxxlim]);
 

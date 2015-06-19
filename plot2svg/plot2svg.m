@@ -2399,7 +2399,11 @@ if strcmp(get(ax,'XTickLabelMode'),'auto') && strcmp(get(ax,'XScale'),'linear')
             numlabels(ix) = str2num(axlabelx{ix});
         end
     else
-        numlabels = str2num(get(ax,'XTickLabel'));
+        try
+            numlabels = str2num(get(ax,'XTickLabel'));
+        catch
+            numlabels = cellfun(@(x) str2num(x), get(ax,'XTickLabel'));
+        end
     end
     labelpos = get(ax,'XTick');
     numlabels = numlabels(:);
@@ -2424,14 +2428,22 @@ if strcmp(get(ax,'YTickLabelMode'),'auto') && strcmp(get(ax,'YScale'),'linear')
             numlabels(ix) = str2num(axlabely{ix});
         end        
     else
-        numlabels = str2num(get(ax,'YTickLabel'));
+         try
+            numlabels = str2num(get(ax,'YTickLabel'));
+         catch
+            numlabels = cellfun(@(x) str2num(x), get(ax,'YTickLabel'));
+         end
     end
     labelpos = get(ax,'YTick');
     numlabels = numlabels(:);
     labelpos = labelpos(:);
     indexnz = find(labelpos ~= 0);
     if (~isempty(indexnz) && ~isempty(numlabels))
-        ratio = numlabels(indexnz)./labelpos(indexnz);
+        try
+            ratio = numlabels(indexnz)./labelpos(indexnz);
+        catch
+            ratio = numlabels((1:length(numlabels)))./labelpos((1:length(numlabels)));
+        end
         if round(log10(ratio(1))) ~= 0
             exptext = sprintf('&#215; 10<tspan font-size="%0.1fpt" dy="%0.1fpt">%g</tspan>',0.7*fontsize,-0.7*fontsize,-log10(ratio(1)));
             label2svg(fid,group,axpos,ax,axpos(1)*paperpos(3),(1-(axpos(2)+axpos(4)))*paperpos(4)-0.5*fontsize,exptext,'left',0,'bottom',1,paperpos,font_color,0)           
@@ -2449,7 +2461,11 @@ if strcmp(get(ax,'ZTickLabelMode'),'auto') && strcmp(get(ax,'ZScale'),'linear')
             numlabels(ix) = str2num(axlabelz{ix});
         end
     else
-        numlabels = str2num(get(ax,'ZTickLabel'));
+         try
+            numlabels = str2num(get(ax,'ZTickLabel'));
+         catch
+            numlabels = cellfun(@(x) str2num(x), get(ax,'ZTickLabel'));
+         end
     end
     labelpos = get(ax,'ZTick');
     numlabels = numlabels(:);

@@ -1,20 +1,20 @@
 function [h, p, sign] = rastplotstat(rasters,fsigma,twind_one,twin_two,plotwind)
 %raster averaging, stat test on two regions and plot
 
-convrasters_one=NaN(size(rasters,1),diff(twind_one)+2*(3*fsigma)+1); %kernel's linear space is 6 sigma
+convrasters_one=NaN(size(rasters,1),diff(twind_one)+1); %kernel's linear space is 6 sigma
 for rast=1:size(rasters,1)
-    convrasters_one(rast,:)=fullgauss_filtconv(rasters(rast,twind_one(1)-3*fsigma:twind_one(2)+3*fsigma),fsigma,0);
+    convrasters_one(rast,:)=fullgauss_filtconv(rasters(rast,twind_one(1):twind_one(2)),fsigma,0);
 end
 
-convrasters_one=convrasters_one(:,3*fsigma+1:end-3*fsigma);
+% convrasters_one=convrasters_one(:,3*fsigma+1:end-3*fsigma);
 convrasters_one=nanmean(convrasters_one).*1000;
 
-convrasters_two=NaN(size(rasters,1),diff(twin_two)+2*(3*fsigma)+1);
+convrasters_two=NaN(size(rasters,1),diff(twin_two)+1);
 for rast=1:size(rasters,1)
-    convrasters_two(rast,:)=fullgauss_filtconv(rasters(rast,twin_two(1)-3*fsigma:twin_two(2)+3*fsigma),fsigma,0);
+    convrasters_two(rast,:)=fullgauss_filtconv(rasters(rast,twin_two(1):twin_two(2)),fsigma,0);
 end
 
-convrasters_two=convrasters_two(:,3*fsigma+1:end-3*fsigma);
+% convrasters_two=convrasters_two(:,3*fsigma+1:end-3*fsigma);
 convrasters_two=nanmean(convrasters_two).*1000;
 
 [sign, ~, p] = statcond({convrasters_one convrasters_two}, 'method', 'perm', 'naccu', 20000);

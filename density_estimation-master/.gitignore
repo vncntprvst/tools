@@ -1,0 +1,10 @@
+dev/
+tmp/
+track/
+*~
+_*
+*.mat
+*.log
+*.asv
+*.eps
+*.DS_Store
