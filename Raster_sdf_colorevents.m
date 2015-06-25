@@ -1,6 +1,6 @@
 function Raster_sdf_plot(rasters,event_times,start,stop,alignmtt,conv_sigma,evtsort)
-% event_times=gsdata(sacalg).evttime
-% evtsort=0 %default 0 for chronological display order
+% event_times=gsdata(sacalg).evttime;
+% evtsort=0; %default 0 for chronological display order
 
 if start < 1
     start = 1;
@@ -9,13 +9,14 @@ if stop > size(rasters,2)
     stop = size(rasters,2);
 end
 
-    if evtsort
+%     if ~evtsort %% that's for plotting multiple rasters / sdfs, with all
+%     rasters pooled together in chronological order
 %        cut_chrasters=zeros(length([alignedata.trials]),plotstart+plotstop+1);
 %        %listing relevant trials in a continuous series with other rasters
 %        chronoidx=ismember(sort([alignedata.trials]),alignedata(rastnum).trials); 
-        cut_chrasters=zeros(size(rasters,1),stop-start-6*conv_sigma+1);
-        chronoidx=1:size(rasters,1);
-    end
+%         cut_chrasters=zeros(size(rasters,1),stop-start-6*conv_sigma+1);
+%         chronoidx=1:size(rasters,1);
+%     end
 
 figure
 colormap lines;
@@ -57,47 +58,56 @@ cut_rasters = rasters(:,start+3*conv_sigma:stop-3*conv_sigma); % Isolate rasters
 rast_mask = rast_mask(:,start+3*conv_sigma:stop-3*conv_sigma,:);
 isnantrial = isnan(sum(cut_rasters,2)); % Identify nantrials
 cut_rasters(isnan(cut_rasters)) = 0; % take nans out so they don't get plotted
-if ~evtsort
-    cut_chrasters(chronoidx,:)=cut_rasters;
-    [indy, indx] = ind2sub(size(cut_chrasters),find(cut_chrasters)); %find row and column coordinates of spikes
-else
+% if ~evtsort
+%     cut_chrasters(chronoidx,:)=cut_rasters;
+%     [indy, indx] = ind2sub(size(cut_chrasters),find(cut_chrasters)); %find row and column coordinates of spikes
+% else
 %     [indy, indx] = ind2sub(size(cut_rasters),find(cut_rasters)); %find row and column coordinates of spikes
 %     [indy, indx, indz] = ind2sub(size(rast_mask),find(rast_mask));
-%"masked" rasters
-[indy{1}, indx{1}] = ind2sub(size(cut_rasters),find(cut_rasters & rast_mask(:,:,1)));
-end
 
-% record event times for every trial
+%"masked" rasters record event times for every trial
 % event order is 'cue' 'eyemvt' 'fix' 'rew' 'fail'
-try
-    greytimes=eventtimes-start;
-    greytimes(greytimes<0)=0;
-    greytimes(greytimes>(stop-start+1))=stop-start+1;
-catch
-    greytimes=0;
-end
-
-if ~sum(sum(isnan(greytimes))) && logical(sum(sum(greytimes))) && evtsort
-    grxlims=[greytimes';greytimes(:,2:-1:1)'];
-    grylims=[1:size(grxlims,2);1:size(grxlims,2);2:size(grxlims,2)+1;2:size(grxlims,2)+1];
-    patch(grxlims, grylims, [0 0 0], 'EdgeColor', 'none','FaceAlpha', 0.2)
-end
-evtlimidx={indx<=900,indx>900};
+[indy{1}, indx{1}] = ind2sub(size(cut_rasters),find(cut_rasters & rast_mask(:,:,1)));
+[indy{2}, indx{2}] = ind2sub(size(cut_rasters),find(cut_rasters & rast_mask(:,:,2)));
+[indy{3}, indx{3}] = ind2sub(size(cut_rasters),find(cut_rasters & rast_mask(:,:,3)));
+[indy{4}, indx{4}] = ind2sub(size(cut_rasters),find(cut_rasters & rast_mask(:,:,4)));
+% regular (not "masked") rasters
+[indy{5}, indx{5}] = ind2sub(size(cut_rasters),find(cut_rasters));
+% end
 
 if(size(rasters,1) == 1)
-    plot([indx;indx],[indy;indy+1],'color',cmap(1,:),'LineStyle','-'); % plot rasters
+rastlines{1}=plot([indx{5};indx{5}],[indy{5};indy{5}+1],'color',cmap(1,:),'LineStyle','-'); % plot rasters
 else
-%     plot([indx(evtlimidx{1})';indx(evtlimidx{1})'],...
-%         [indy(evtlimidx{1})';indy(evtlimidx{1})'+1],'color',cmap(2,:),'LineStyle','-'); % plot rasters
-%     plot([indx(evtlimidx{2})';indx(evtlimidx{2})'],...
-%         [indy(evtlimidx{2})';indy(evtlimidx{2})'+1],'color',cmap(3,:),'LineStyle','-'); % plot rasters
+rastlines{1}=plot([indx{5}';indx{5}'],[indy{5}';indy{5}'+1],'color','k','LineStyle','-'); % plot rasters
+    
+    %plot bi-color rasters pre/post event
+    % get raster indx referenced to alignement time, for standard two-color plot
+% evtlimidx={indx{5}<=alignmtt-(start+3*conv_sigma),indx{5}>alignmtt-(start+3*conv_sigma)};
+%     plot([indx{5}(evtlimidx{1})';indx{5}(evtlimidx{1})'],...
+%         [indy{5}(evtlimidx{1})';indy{5}(evtlimidx{1})'+1],'color',cmap(1,:),'LineStyle','-'); % plot < align event rasters
+%     plot([indx{5}(evtlimidx{2})';indx{5}(evtlimidx{2})'],...
+%         [indy{5}(evtlimidx{2})';indy{5}(evtlimidx{2})'+1],'color',cmap(4,:),'LineStyle','-'); % plot > align event rasters
+
     % plot "masked" rasters 
-
+rastlines{2}=plot([indx{1}';indx{1}'],[indy{1}';indy{1}'+1],'color',cmap(1,:),'LineStyle','-'); % plot rasters
+rastlines{3}=plot([indx{2}';indx{2}'],[indy{2}';indy{2}'+1],'color',cmap(2,:),'LineStyle','-'); % plot rasters
+rastlines{4}=plot([indx{3}';indx{3}'],[indy{3}';indy{3}'+1],'color',cmap(4,:),'LineStyle','-'); % plot rasters
+rastlines{5}=plot([indx{4}';indx{4}'],[indy{4}';indy{4}'+1],'color',cmap(7,:),'LineStyle','-'); % plot rasters    
 end
+rastlineprop=cellfun(@(x) x(1), rastlines(~cellfun('isempty',rastlines)),'UniformOutput',false);
+rasterevtlegtxt={'raw','cue','eyemvt','fix','rew'};rasterevtlegtxt=rasterevtlegtxt(~cellfun('isempty',rastlines));
+[rastlegh,rastlegicons]=legend([rastlineprop{:}],rasterevtlegtxt,'Location','northoutside')%,'FontSize',8,'FontWeight','bold',...
+%     ,'Orientation','horizontal');
 
+%refine legend
+rastlegicons(5).LineStyle=':';
+rastlegicons(5).LineWidth=3
+% rasterevtlegtxtcol=cellfun(@(x) x.Color, rastlineprop(~cellfun('isempty',rastlines)),'UniformOutput',false)
+rastlegicons(1).Color='red'
+rastlegh.Box='off';
+rastlegh.linewidth=10;
 set(gca,'xlim',[1 length(start+3*conv_sigma:stop-3*conv_sigma)]);
 axis(gca, 'off'); % axis tight sets the axis limits to the range of the data.
-
     
 %% Plot sdf
 sdfplot=subplot(2,1,2,'Layer','top');
