@@ -94,20 +94,34 @@ rastlines{3}=plot([indx{2}';indx{2}'],[indy{2}';indy{2}'+1],'color',cmap(2,:),'L
 rastlines{4}=plot([indx{3}';indx{3}'],[indy{3}';indy{3}'+1],'color',cmap(4,:),'LineStyle','-'); % plot rasters
 rastlines{5}=plot([indx{4}';indx{4}'],[indy{4}';indy{4}'+1],'color',cmap(7,:),'LineStyle','-'); % plot rasters    
 end
+% keep plot position
+rastplotpos=hrastplot.Position;
 rastlineprop=cellfun(@(x) x(1), rastlines(~cellfun('isempty',rastlines)),'UniformOutput',false);
-rasterevtlegtxt={'raw','cue','eyemvt','fix','rew'};rasterevtlegtxt=rasterevtlegtxt(~cellfun('isempty',rastlines));
-[rastlegh,rastlegicons]=legend([rastlineprop{:}],rasterevtlegtxt,'Location','northoutside')%,'FontSize',8,'FontWeight','bold',...
-%     ,'Orientation','horizontal');
-
+rasterevtlegtxt={'raw','cue','eye mvt','fix','rew'};rasterevtlegtxt=rasterevtlegtxt(~cellfun('isempty',rastlines));
+[rastlegh,rastlegicons]=legend([rastlineprop{:}],rasterevtlegtxt,'Location','northoutside')%,'FontSize',8,'FontWeight','bold',
 %refine legend
-rastlegicons(5).LineStyle=':';
-rastlegicons(5).LineWidth=3
-% rasterevtlegtxtcol=cellfun(@(x) x.Color, rastlineprop(~cellfun('isempty',rastlines)),'UniformOutput',false)
-rastlegicons(1).Color='red'
+% Style
+[rastlegicons([5,7,9,11]).LineStyle]=deal([':']);
+[rastlegicons([5,7,9,11]).LineWidth]=deal(3);
+[rastlegicons([5,7,9,11]).LineWidth]=deal(3); 
+% Position
+set(rastlegh,'Orientation','horizontal')
+rastlegicons(2).Position=(rastlegicons(2).Position)-[0.25 0 0]
+rastlegicons(4).Position=(rastlegicons(4).Position)-[0.25 0 0]
+rastlegicons(1).Position(2)=rastlegicons(2).Position(2)
+rastlegicons(5).YData=[rastlegicons(2).Position(2) rastlegicons(2).Position(2)]
+rastlegicons(3).Position(2)=rastlegicons(4).Position(2)
+rastlegicons(9).YData=[rastlegicons(4).Position(2) rastlegicons(4).Position(2)]
+[rastlegicons([5,7,9,11]).XData]=deal([rastlegicons(5).XData(end)/2-0.05 rastlegicons(5).XData(end)/2]);
+[rastlegicons([5,9]).XData]=deal([rastlegicons(5).XData(1)+0.25 rastlegicons(5).XData(2)+0.25]);
+% [rastlegicons([2,4]).Position]=deal(rasterevtlegtxtcol{1:4});
+% Color
+rasterevtlegtxtcol=cellfun(@(x) x.Color, rastlineprop(~cellfun('isempty',rastlines)),'UniformOutput',false);
+[rastlegicons([1:4]).Color]=deal(rasterevtlegtxtcol{1:4});
 rastlegh.Box='off';
-rastlegh.linewidth=10;
+set(hrastplot,'Position',rastplotpos);
 set(gca,'xlim',[1 length(start+3*conv_sigma:stop-3*conv_sigma)]);
-axis(gca, 'off'); % axis tight sets the axis limits to the range of the data.
+% axis(gca, 'off');
     
 %% Plot sdf
 sdfplot=subplot(2,1,2,'Layer','top');
