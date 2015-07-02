@@ -1,6 +1,4 @@
-function Raster_sdf_plot(rasters,event_times,start,stop,alignmtt,conv_sigma,evtsort)
-% event_times=gsdata(sacalg).evttime;
-% evtsort=0; %default 0 for chronological display order
+function Raster_sdf_colorevents(rasters,event_times,start,stop,alignmtt,conv_sigma,evtsort)
 
 if start < 1
     start = 1;
@@ -78,7 +76,7 @@ cut_rasters(isnan(cut_rasters)) = 0; % take nans out so they don't get plotted
 if(size(rasters,1) == 1)
 rastlines{1}=plot([indx{5};indx{5}],[indy{5};indy{5}+1],'color',cmap(1,:),'LineStyle','-'); % plot rasters
 else
-rastlines{1}=plot([indx{5}';indx{5}'],[indy{5}';indy{5}'+1],'color','k','LineStyle','-'); % plot rasters
+rastlines{1}=plot([indx{5}';indx{5}'],[indy{5}';indy{5}'+1],'color','k','LineStyle','-'); % plot "raw" rasters
     
     %plot bi-color rasters pre/post event
     % get raster indx referenced to alignement time, for standard two-color plot
@@ -89,10 +87,10 @@ rastlines{1}=plot([indx{5}';indx{5}'],[indy{5}';indy{5}'+1],'color','k','LineSty
 %         [indy{5}(evtlimidx{2})';indy{5}(evtlimidx{2})'+1],'color',cmap(4,:),'LineStyle','-'); % plot > align event rasters
 
     % plot "masked" rasters 
-rastlines{2}=plot([indx{1}';indx{1}'],[indy{1}';indy{1}'+1],'color',cmap(1,:),'LineStyle','-'); % plot rasters
-rastlines{3}=plot([indx{2}';indx{2}'],[indy{2}';indy{2}'+1],'color',cmap(2,:),'LineStyle','-'); % plot rasters
-rastlines{4}=plot([indx{3}';indx{3}'],[indy{3}';indy{3}'+1],'color',cmap(4,:),'LineStyle','-'); % plot rasters
-rastlines{5}=plot([indx{4}';indx{4}'],[indy{4}';indy{4}'+1],'color',cmap(7,:),'LineStyle','-'); % plot rasters    
+rastlines{2}=plot([indx{1}';indx{1}'],[indy{1}';indy{1}'+1],'color',cmap(1,:),'LineStyle','-'); % plot cue rasters
+rastlines{3}=plot([indx{2}';indx{2}'],[indy{2}';indy{2}'+1],'color',cmap(2,:),'LineStyle','-'); % plot eye mvt rasters
+rastlines{4}=plot([indx{3}';indx{3}'],[indy{3}';indy{3}'+1],'color',cmap(4,:),'LineStyle','-'); % plot fix rasters
+rastlines{5}=plot([indx{4}';indx{4}'],[indy{4}';indy{4}'+1],'color',cmap(7,:),'LineStyle','-'); % plot rew rasters    
 end
 % keep plot position
 rastplotpos=hrastplot.Position;
@@ -122,6 +120,14 @@ rastlegh.Box='off';
 set(hrastplot,'Position',rastplotpos);
 set(gca,'xlim',[1 length(start+3*conv_sigma:stop-3*conv_sigma)]);
 % axis(gca, 'off');
+
+% drawing the alignment bar
+if ~isempty(rasters)
+    alignbarh=patch([repmat((alignmtt-(start+3*conv_sigma))-2,1,2) repmat((alignmtt-(start+3*conv_sigma))+2,1,2)], ...
+        [[0 max(get(gca,'YLim'))] fliplr([0 max(get(gca,'YLim'))])], ...
+        [0 0 0 0],[1 1 0],'EdgeColor','none','FaceAlpha',0.5);
+%     uistack(alignbarh,top);
+end
     
 %% Plot sdf
 sdfplot=subplot(2,1,2,'Layer','top');
@@ -138,18 +144,27 @@ end
 
 if size(rasters(~isnantrial,:),1)>=5
     %    plot confidence intervals
-    patch([1:length(sdf),fliplr(1:length(sdf))],[sdf-rastsem,fliplr(sdf+rastsem)],cc(rastnum,:),'EdgeColor','none','FaceAlpha',0.1);
+    patch([1:length(sdf),fliplr(1:length(sdf))],[sdf-rastsem,fliplr(sdf+rastsem)],cmap(rastnum,:),'EdgeColor','none','FaceAlpha',0.1);
     %plot sdf
-    plot(sdf,'Color',cc(rastnum,:),'LineWidth',1.8);
+    plot(sdf,'Color',cmap(rastnum,:),'LineWidth',1.8);
 end
 
-axis(gca,'tight');
-box off;
-set(gca,'Color','white','TickDir','out','FontName','calibri','FontSize',8); %'YAxisLocation','rigth'
-hylabel=ylabel(gca,'Firing rate (spikes/s)','FontName','calibri','FontSize',8);
-currylim=get(gca,'YLim');
+    set(gca,'XTick',[0:100:(stop-start-6*conv_sigma)]);
+    set(gca,'XTickLabel',-(alignmtt-(start+3*conv_sigma)):100:stop-(alignmtt+3*conv_sigma));
+    axis(gca,'tight'); box off;
+    set(gca,'Color','white','TickDir','out','FontName','Cambria','FontSize',10);
+    hxlabel=xlabel(gca,'Time (ms)','FontName','Cambria','FontSize',10);
+    hylabel=ylabel(gca,'Firing rate (spikes/s)','FontName','Cambria','FontSize',10);
+%     legh=legend(lineh(1:3),{'No Stop Signal','Stop Signal: Cancelled', 'Stop Signal: Non Cancelled'});
+%     set(legh,'Interpreter','none','Location','SouthWest','Box','off','LineWidth',1.5,'FontName','Cambria','FontSize',9); % Interpreter prevents underscores turning character into subscript
+%     title(['Cluster' num2str(clusnum) ' Aligned to saccade'],'FontName','Cambria','FontSize',15);
+ 
+% set(gca,'Color','white','TickDir','out','FontName','calibri','FontSize',8); %'YAxisLocation','rigth'
+% hylabel=ylabel(gca,'Firing rate (spikes/s)','FontName','calibri','FontSize',8);
+
 
 if ~isempty(rasters)
+    currylim=get(gca,'YLim');
     % drawing the alignment bar
     patch([repmat((alignmtt-(start+3*conv_sigma))-2,1,2) repmat((alignmtt-(start+3*conv_sigma))+2,1,2)], ...
         [[0 currylim(2)] fliplr([0 currylim(2)])], ...
