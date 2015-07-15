@@ -27,7 +27,6 @@ try
                 [session.MouseData.righttime;toc];
         elseif strcmp(sentence,'Frontpanelexplored') %Front:DoubleReward!
             %play sound
-%             elapsedTime = toc;
             soundsc(s,Freq)
             session.MouseData.frontcount=session.MouseData.frontcount+1;
 %             session.MouseData.rew=session.MouseData.rew+2;
@@ -35,7 +34,7 @@ try
                 [session.MouseData.frontime;toc];
         end
         
-        if session.MouseData.rew > 200 || toc > 3600
+        if session.MouseData.rew > 400 || toc > 3600
             session.gameon = false;
             disp ('Timeout: Connection ended');
         end

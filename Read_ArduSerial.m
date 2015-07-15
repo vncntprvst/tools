@@ -54,7 +54,7 @@ disp ('Connection established.');
 % while session.gameon == false;
 % wait(timer_ardu,'finished');
 
-filename='session.mat'
+filename='s6_PrV25_1.mat'; %'session.mat'
 save(filename,'session');
 % load('session.mat')
 
@@ -78,16 +78,16 @@ plot(session.MouseData.lefttime,1:size(session.MouseData.lefttime,1))
 hold on
 plot(session.MouseData.righttime,1:size(session.MouseData.righttime,1))
 legend('left port','right port')
-xlabel('Time')
+xlabel('Time (s)')
 ylabel('Reward count')
 
 % time from front panel to reward port
-foo=round(session.MouseData.fronttime.*10);
-bla=mat2cell(round(session.MouseData.lefttime.*10),2);
-cellfun(@(x) x-find(foo(foo<x),'last'), )
-
-for port=1:size(session.MouseData.fronttime,1)
-    fronttoporttime=session.MouseData.lefttime
+% foo=round(session.MouseData.fronttime.*10);
+% bla=mat2cell(round(session.MouseData.lefttime.*10),2);
+% cellfun(@(x) x-find(foo(foo<x),'last'), )
+% 
+% for port=1:size(session.MouseData.fronttime,1)
+%     fronttoporttime=session.MouseData.lefttime
 
 
 
