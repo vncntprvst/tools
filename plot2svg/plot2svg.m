@@ -1576,6 +1576,9 @@ for i=length(axchild):-1:1
                 if ischar(markeredgecolor)
                     switch markeredgecolor
                         case 'none',markeredgecolorname='none';
+                        case 'auto' %new Matlab color schemes
+                            markeredgecolor=get(gcf,'colormap');markeredgecolor=markeredgecolor(i,:);
+                            markeredgecolorname=searchcolor(id,markeredgecolor);
                         otherwise,
                             % if markeredgecolorname is 'auto' or something
                             % else set the markeredgecolorname to the line color
