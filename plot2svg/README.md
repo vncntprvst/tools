@@ -5,19 +5,19 @@ Converts 2D & 3D Matlab plots to the scalable vector format (SVG). This format i
 Added preliminary support of filter, clipping, and tickmark extensions that go beyond the Matlab functionality. SVG filters are a great tool to create stylish plots! Try it out! Before you start using this new features have a look at the tutorial. More information and examples can be found on my blog http://www.zhinst.com/blogs/schwizer/.
 
 Tested browsers and editors for basic SVG support (no filters, no animation):
-  Opera 9.64,10.50,10.63  -> yes
-  Firefox 3.5,3.6,12.0 -> yes
-  Inkscape 0.46, 0.47 -> yes
-  Chrome 8.0,18.0 beta -> yes
+  Opera 9.64, 10.50, 10.63  -> yes
+  Firefox 3.5, 3.6, 12.0, 15.0 -> yes
+  Inkscape 0.46, 0.47, 0.48 -> yes
+  Chrome 8.0, 18.0, 21.0 -> yes
   Internet Explorer 9.0 beta -> yes
   Internet Explorer 8.0 -> no
   Internet Explorer + RENESIS -> yes
 
 Tested browsers and editors for SVG filters:
-  Opera 9.64,10.50,10.63  -> yes
-  Firefox 3.5,3.6,12.0 -> yes
-  Inkscape 0.46, 0.47 -> yes (some limitations)
-  Chrome 8.0,18.0 beta -> yes
+  Opera 9.64, 10.50, 10.63  -> yes
+  Firefox 3.5, 3.6, 12.0, 15.0 -> yes
+  Inkscape 0.46, 0.47, 0.48 -> yes (some limitations)
+  Chrome 8.0, 18.0, 21.0 -> yes
   Internet Explorer 8.0, 9.0 beta -> no
   Internet Explorer + RENESIS -> no
 
@@ -176,6 +176,17 @@ Changes in Version 22-10-2011
 Changes in Version 20-05-2012
 - Added some security checks for empty data
 - Fixed rotation for multiline text
+
+Changes in Version 25-08-2012
+- Special handling of 1xn char arrays for tick labels
+  (thanks to David Plavcan)
+- Fix for 'Index exceeds matrix dimensions' of axis labels
+  (thanks to Aslak Grinsted)
+- Fix for another axis label problem (thanks to Ben Mitch)
+
+Changes in Version 15-09-2012
+- Fix for linestyle none of rectangles (thanks to Andrew)
+- Enabled scatter plot functionality
 
 Limitations:
 - axis scaling factors for 3D axes
