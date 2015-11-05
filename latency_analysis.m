@@ -41,7 +41,7 @@ function timeShift=latency_analysis(behavData,neuralData)
 peth=cell(size(neuralData,1),2);
 start=1500;
 stop=999;
-sigma=20;
+sigma=200;
 preAlign=min([(floor(min(cellfun(@(x) x{1}(1),neuralData(:,4,2)))/10)*10)-3*sigma start]); % keep as much trace as possible, typically ~900
 postAlign=min([min(cellfun(@(x) size(x,2),neuralData(:,2,2))-cellfun(@(x) x{1}(1),neuralData(:,4,2)))-3*sigma-1 stop]); % typically 999
 plotIdx=round((preAlign-400)/10):round((preAlign+799)/10); %plotting from 400ms before tgt to 800 ms after
@@ -70,29 +70,29 @@ for rec=1:size(neuralData,1)
 end
 
 %% plotting rec trials
-% if round((preAlign+stop)/10) ~= size(peth{rec,1},2) %round((preAlign+stop)/10) should be = to size(peth{rec,1},2)
-%     %something wrong
-%     disp('check error in plotIdx, latency_analysis');
-%     return;
-% end
-% figure; hold on;
-% imagesc(1:size(peth{rec,1}(:,plotIdx),2),1:size(peth{rec,1}(:,plotIdx),1),peth{rec,1}(:,plotIdx));
-% colormap(parula)
-% tgth=plot(sortedTgt{rec}-round((preAlign-400)/10),1:size(peth{rec,1},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
-% sach=plot(sortedSac{rec}-round((preAlign-400)/10),1:size(peth{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
-% cbh=colorbar;
-% cbh.Label.String = 'Firing rate (Hz)';
-% set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
-% xlabel('Time, aligned to target')
-% ylabel('Trial # - Trials sorted by reaction time')
-% legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
-% title('Recording sdf - Native alignement')
-% axis('tight');
+if round((preAlign+stop)/10) ~= size(peth{rec,1},2) %round((preAlign+stop)/10) should be = to size(peth{rec,1},2)
+    %something wrong
+    disp('check error in plotIdx, latency_analysis');
+    return;
+end
+figure; hold on;
+imagesc(1:size(peth{rec,1}(:,plotIdx),2),1:size(peth{rec,1}(:,plotIdx),1),peth{rec,1}(:,plotIdx));
+colormap(parula)
+tgth=plot(sortedTgt{rec}-round((preAlign-400)/10),1:size(peth{rec,1},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
+sach=plot(sortedSac{rec}-round((preAlign-400)/10),1:size(peth{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
+cbh=colorbar;
+cbh.Label.String = 'Firing rate (Hz)';
+set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
+xlabel('Time, aligned to target')
+ylabel('Trial # - Trials sorted by reaction time')
+legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
+title('Recording sdf - Native alignement')
+axis('tight');
 
 %% eye movement plots
 ev_peth=cell(size(behavData,1),2);
 startEV=500; %(we don't want to include pre-fix eye mvt when shifting)
-stopEV=500;
+stopEV=1000;
 sigmaEV=20;
 preAlignEV=min([(floor(min(cellfun(@(x) x{1}(1),neuralData(:,4,2)))/10)*10)-3*sigmaEV startEV]); % keep as much trace as possible, typically ~900
 postAlignEV=min([min(cellfun(@(x) size(x,2),neuralData(:,2,2))-cellfun(@(x) x{1}(1),neuralData(:,4,2)))-3*sigmaEV-1 stopEV]); % typically 999
@@ -114,19 +114,19 @@ for rec=1:size(behavData,1)
 end
 
 %% plotting eye vel trials
-% figure; hold on;
-% imagesc(1:size(ev_peth{rec,1}(:,plotIdxEV),2),1:size(ev_peth{rec,1}(:,plotIdxEV),1),ev_peth{rec,1}(:,plotIdxEV));
-% colormap(cool)
-% tgth=plot(sortedTgt{rec}-round((preAlignEV-400)/10),1:size(ev_peth{rec,1},1),'Marker','o','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
-% sach=plot(sortedSac{rec}-round((preAlignEV-400)/10),1:size(ev_peth{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
-% cbh=colorbar;
-% cbh.Label.String = 'Eye velocity (Degree/sec)';
-% set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ...
-% xlabel('Time, aligned to target')
-% ylabel('Trial # - Trials sorted by reaction time')
-% legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
-% title('Neuronal activity - Native alignement')
-% axis('tight');
+figure; hold on;
+imagesc(1:size(ev_peth{rec,1}(:,plotIdxEV),2),1:size(ev_peth{rec,1}(:,plotIdxEV),1),ev_peth{rec,1}(:,plotIdxEV));
+colormap(cool)
+tgth=plot(sortedTgt{rec}-round((preAlignEV-400)/10),1:size(ev_peth{rec,1},1),'Marker','o','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
+sach=plot(sortedSac{rec}-round((preAlignEV-400)/10),1:size(ev_peth{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
+cbh=colorbar;
+cbh.Label.String = 'Eye velocity (Degree/sec)';
+set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ...
+xlabel('Time, aligned to target')
+ylabel('Trial # - Trials sorted by reaction time')
+legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
+title('Neuronal activity - Native alignement')
+axis('tight');
 
 %% time-shifting to maximize similarity (and check later if smoothing eyevel over 200ms changes anything)
 % Then a trial-averaged PETH was generated for each cell. For each trial we
@@ -144,13 +144,13 @@ for rec=1:size(neuralData,1)
     peth_av=mean(zscore(peth{rec,1},0,2));
     indivTrials=peth{rec,1};
     pkCc=min([round(size(neuralData{rec,2,2},1)/10) 5])*ones(size(neuralData{rec,2,2},1),1);
-    thld=sum(min([round(size(neuralData{rec,2,2},1)/10) 5])*ones(size(neuralData{rec,2,2},1),1))/10;
+    thld=sum(min([round(size(neuralData{rec,2,2},1)/10) 5])*ones(size(neuralData{rec,2,2},1),1))/100;
     pkCcsum=sum(pkCc);
     iter=0;
     trials=1:size(indivTrials,1); %keep track of those removed
     timeShift{rec,1}=zeros(size(indivTrials,1),1);
     boundShift=zeros(1,2);
-    while abs(pkCcsum)>thld && iter<10
+    while abs(pkCcsum)>1 && iter<10
         iter= iter + 1;
         for trial=1:size(indivTrials,1)
             % figure;hold on; plot(peth{rec,1}(trial,:));plot(peth{rec,2});
@@ -172,18 +172,30 @@ for rec=1:size(neuralData,1)
             pkCc=pkCc(abs(pkCc)<2*std(pkCc),:);
         end
         % then set shift bounds
-        shift_bounds=[min([min(pkCc(abs(pkCc)<2*std(pkCc))) 0]) max([max(pkCc(abs(pkCc)<2*std(pkCc))) 0])]; boundShift=boundShift+shift_bounds;
+%         shift_bounds=[min([min(pkCc(abs(pkCc)<2*std(pkCc))) 0]) max([max(pkCc(abs(pkCc)<2*std(pkCc))) 0])]; boundShift=boundShift+shift_bounds;
+        
+        if sum(abs(pkCc))>thld
+            shift_bounds=[min([min(pkCc(abs(pkCc)<3*std(pkCc))) 0]) max([max(pkCc(abs(pkCc)<3*std(pkCc))) 0])]; boundShift=boundShift+shift_bounds;
+        else
+            shift_bounds=[min(pkCc) max(pkCc)]; boundShift=boundShift+shift_bounds;
+        end
+        
         %pre-allocate
         indivTrials_realigned=zeros(size(indivTrials,1),size(indivTrials,2)+abs(min(shift_bounds))+abs(max(shift_bounds)));
         %     indivTrials_realigned=repmat(median(indivTrials,2),1,size(indivTrials,2)+abs(min(shift_bounds))+abs(max(shift_bounds))).*ones(size(indivTrials,1),size(indivTrials,2)+abs(min(shift_bounds))+abs(max(shift_bounds)));
         for trial=1:size(indivTrials)
-            if pkCc(trial)<min(shift_bounds)
+%             if pkCc(trial)<min(shift_bounds)
+%                 pkCc(trial)=min(shift_bounds);
+%             elseif pkCc(trial)>max(shift_bounds)
+%                 pkCc(trial)=max(shift_bounds);
+%             end
+            if pkCc(trial)<min(shift_bounds) && sum(abs(pkCc))>thld
                 pkCc(trial)=min(shift_bounds);
-            elseif pkCc(trial)>max(shift_bounds)
+            elseif pkCc(trial)>max(shift_bounds) && sum(abs(pkCc))>thld
                 pkCc(trial)=max(shift_bounds);
             end
             timeShift{rec,1}(trial)=timeShift{rec,1}(trial)+pkCc(trial);
-            indivTrials_realigned(trial,abs(min(shift_bounds))+pkCc(trial)+1:length(indivTrials(trial,:))+abs(min(shift_bounds))+pkCc(trial))=indivTrials(trial,:);
+            indivTrials_realigned(trial,abs(max(shift_bounds))-pkCc(trial)+1:length(indivTrials(trial,:))+abs(max(shift_bounds))-pkCc(trial))=indivTrials(trial,:);
         end
         indivTrials=indivTrials_realigned; %(:,abs(min(pkCc))+1:size(indivTrials,2)+abs(min(pkCc)));
         peth_av=mean(zscore(indivTrials,0,2));
@@ -192,19 +204,19 @@ for rec=1:size(neuralData,1)
 end
 
 %% plotting shifted rec trials
-% figure; hold on;
-% imagesc(1:size(indivTrials(:,plotIdx-boundShift(1)),2),1:size(indivTrials,1),indivTrials(:,plotIdx-boundShift(1)));
-% colormap(parula)
-% tgth=plot(sortedTgt{rec}(trials)-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
-% sach=plot(sortedSac{rec}(trials)-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
-% cbh=colorbar;
-% cbh.Label.String = 'Firing rate (Hz)';
-% set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
-% xlabel('Time shifted rasters')
-% ylabel('Trial # - Trials sorted by reaction time')
-% legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
-% title('Recording sdf - Native alignement')
-% axis('tight');    
+figure; hold on;
+imagesc(1:size(indivTrials(:,plotIdx-boundShift(1)),2),1:size(indivTrials,1),indivTrials(:,plotIdx-boundShift(1)));
+colormap(parula)
+tgth=plot(sortedTgt{rec}(trials)-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
+sach=plot(sortedSac{rec}(trials)-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
+cbh=colorbar;
+cbh.Label.String = 'Firing rate (Hz)';
+set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
+xlabel('Time shifted rasters')
+ylabel('Trial # - Trials sorted by reaction time')
+legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
+title('Recording sdf - Native alignement')
+axis('tight');    
 
 %% time-shifting eye vel
 for rec=1:size(neuralData,1)
@@ -212,24 +224,27 @@ for rec=1:size(neuralData,1)
     peth_av=mean(ev_peth{rec,1});
     indivTrials=ev_peth{rec,1};
     pkCc=min([round(size(neuralData{rec,2,2},1)/10) 5])*ones(size(neuralData{rec,2,2},1),1);
-    thld=sum(min([round(size(neuralData{rec,2,2},1)/10) 5])*ones(size(neuralData{rec,2,2},1),1))/10;
+    thld=sum(min([round(size(neuralData{rec,2,2},1)/10) 5])*ones(size(neuralData{rec,2,2},1),1))/100;
     pkCcsum=sum(pkCc);
     iter=0;
     trials=1:size(indivTrials,1); %keep track of those removed
     timeShift{rec,2}=zeros(size(indivTrials,1),1);
     boundShift=zeros(1,2);
-    while abs(pkCcsum)>thld && iter<10
+    while abs(pkCcsum)>1 && iter<10
         iter= iter + 1;
         for trial=1:size(indivTrials,1)
 %             figure;hold on; plot(indivTrials(trial,:));plot(mean(ev_peth{rec,1}));
 %             figure;hold on; plot(zscore(indivTrials(trial,:),0,2));plot(peth_av);
             if pkCc(trial)>0
-%                 pkCc(trial) = min([siglag(zscore(indivTrials(trial,:),0,2),peth_av) pkCc(trial)]); %prevent further drifting
-                  pkCc(trial) = min([siglag(indivTrials(trial,:),peth_av) pkCc(trial)]);
+%                   pkCc(trial) = min([siglag(zscore(indivTrials(trial,:),0,2),peth_av) pkCc(trial)]); %prevent further drifting
+%                   pkCc(trial) = min([siglag(indivTrials(trial,:),peth_av) pkCc(trial)]);
+                    pkCc(trial) = siglag(indivTrials(trial,:),peth_av);
             elseif pkCc(trial)<0
-%                 pkCc(trial) = max([siglag(zscore(indivTrials(trial,:),0,2),peth_av) pkCc(trial)]); % idem
-                  pkCc(trial) = max([siglag(indivTrials(trial,:),peth_av) pkCc(trial)]);
+%                   pkCc(trial) = max([siglag(zscore(indivTrials(trial,:),0,2),peth_av) pkCc(trial)]); % idem
+%                   pkCc(trial) = max([siglag(indivTrials(trial,:),peth_av) pkCc(trial)]);
+                    pkCc(trial) = siglag(indivTrials(trial,:),peth_av);
             else
+                    pkCc(trial) = siglag(indivTrials(trial,:),peth_av);
                 % well, don't touch it
             end
         end
@@ -243,18 +258,22 @@ for rec=1:size(neuralData,1)
 %             pkCc=pkCc(abs(pkCc)<2*std(pkCc),:);
 %         end
         % then set shift bounds
-        shift_bounds=[min([min(pkCc(abs(pkCc)<2*std(pkCc))) 0]) max([max(pkCc(abs(pkCc)<2*std(pkCc))) 0])]; boundShift=boundShift+shift_bounds;
+        if sum(abs(pkCc))>thld
+            shift_bounds=[min([min(pkCc(abs(pkCc)<3*std(pkCc))) 0]) max([max(pkCc(abs(pkCc)<3*std(pkCc))) 0])]; boundShift=boundShift+shift_bounds;
+        else
+            shift_bounds=[min(pkCc) max(pkCc)]; boundShift=boundShift+shift_bounds;
+        end
         %pre-allocate
         indivTrials_realigned=zeros(size(indivTrials,1),size(indivTrials,2)+abs(min(shift_bounds))+abs(max(shift_bounds)));
         %     indivTrials_realigned=repmat(median(indivTrials,2),1,size(indivTrials,2)+abs(min(shift_bounds))+abs(max(shift_bounds))).*ones(size(indivTrials,1),size(indivTrials,2)+abs(min(shift_bounds))+abs(max(shift_bounds)));
         for trial=1:size(indivTrials)
-            if pkCc(trial)<min(shift_bounds)
+            if pkCc(trial)<min(shift_bounds) && sum(abs(pkCc))>thld
                 pkCc(trial)=min(shift_bounds);
-            elseif pkCc(trial)>max(shift_bounds)
+            elseif pkCc(trial)>max(shift_bounds) && sum(abs(pkCc))>thld
                 pkCc(trial)=max(shift_bounds);
             end
             timeShift{rec,2}(trial)=timeShift{rec,2}(trial)+pkCc(trial);
-            indivTrials_realigned(trial,abs(min(shift_bounds))+pkCc(trial)+1:length(indivTrials(trial,:))+abs(min(shift_bounds))+pkCc(trial))=indivTrials(trial,:);
+            indivTrials_realigned(trial,abs(max(shift_bounds))-pkCc(trial)+1:length(indivTrials(trial,:))+abs(max(shift_bounds))-pkCc(trial))=indivTrials(trial,:);
         end
         indivTrials=indivTrials_realigned; %(:,abs(min(pkCc))+1:size(indivTrials,2)+abs(min(pkCc)));
         peth_av=mean(zscore(indivTrials,0,2));
