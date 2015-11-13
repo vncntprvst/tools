@@ -149,7 +149,7 @@ end
 % iterations. The output of this alignment procedure was an offset time for
 % each trial, which indicated the relative neural latency for that trial.
 
-timeShift=cell(size(neuralData,1),2);
+timeShift=cell(size(neuralData,1),4);%
 trials=cell(size(neuralData,1),1);
 % time-shifting recordings
 for rec=1:size(neuralData,1)
@@ -378,6 +378,24 @@ end
 %     axis('tight');
 %     close(gcf);
 % end
+
+%% time-shifting SSD from SST before
+%%%%%%% do not remove trials: make FR time-shift on subset of NSST preceded
+%%%%%%% by SST
+postSST_NSST=cellfun(@(x,y) x(ismember(x,y+1)),behavData(:,1),behavData(:,2),'UniformOutput',false);
+postSST_NSST=cellfun(@(x,y) (ismember(x,y)),trials,postSST_NSST,'UniformOutput',false);
+preNSST_SST=cellfun(@(x,y,z) ismember(x,y(z)-1),behavData(:,2),trials,postSST_NSST,'UniformOutput',false);
+for rec=1:size(neuralData,1)
+    try
+        timeShift{rec,3}=timeShift{rec,1}(postSST_NSST{rec});
+        ssds=[behavData{rec,8}{1,1};behavData{rec,8}{1,2}];
+        timeShift{rec,4}=ceil((mean(sort(ssds))'-sort(ssds))'/10);
+        timeShift{rec,4}=timeShift{rec,4}(preNSST_SST{rec});
+    catch
+        continue
+    end
+end
+
 
 
 
