@@ -1,4 +1,4 @@
-function timeShift=latency_analysis(behavData,neuralData,plotdata)
+function [timeShift,keepRec]=latency_analysis(behavData,neuralData,plotdata)
 
 %% Latency Analysis
 %
@@ -63,11 +63,11 @@ for rec=1:size(neuralData,1)
             neuralData{rec, 4,2}{1, trial}(1)+3*sigma+postAlign),sigma,1).*1000;
         peth{rec,1}(trial,:) = trialconv(1:10:end);%downsample
     end
-%     %keep unsorted sdf
-%     unsortedPETH{rec,1}=peth{rec,1};
+    %     %keep unsorted sdf
+    %     unsortedPETH{rec,1}=peth{rec,1};
     % then sort trials by RT
     [sortedRT,sortedRTidx{rec,1}]=sort(behavData{rec, 3});% sort reation times and keep sort index
-    peth{rec,1}=peth{rec,1}(sortedRTidx{rec,1},:);        % sort PETHs accordingly  
+    peth{rec,1}=peth{rec,1}(sortedRTidx{rec,1},:);        % sort PETHs accordingly
     
     % if aligned to saccades:
     %     sortedTgt{rec}=cellfun(@(x) x(1),neuralData{rec, 4}(sortedRTidx))-(neuralData{rec,3}-1000);
@@ -122,7 +122,7 @@ for rec=1:size(behavData,1)
         ev_peth{rec,1}(trial,:) = trial_ev(1:10:end);%downsample
     end
     % sort trials by RT
-%     [~,sortedRTidx]=sort(behavData{rec, 3});        % sort reation times
+    %     [~,sortedRTidx]=sort(behavData{rec, 3});        % sort reation times
     ev_peth{rec,1}=ev_peth{rec,1}(sortedRTidx{rec,1},:);   % sort ev_PETHs accordingly
 end
 %% plotting eye vel trials
@@ -229,20 +229,20 @@ for rec=1:size(neuralData,1)
         peth_av=mean(zscore(indivTrials,0,2));
         pkCcsum=sum(abs(pkCc)); % to prevent execution stops mid-loop
     end
-%     figure; hold on;
-%     imagesc(1:size(indivTrials(:,plotIdx+boundShift(2)),2),1:size(indivTrials,1),indivTrials(:,plotIdx+boundShift(2)));
-%     colormap(parula)
-%     tgth=plot(sortedTgt{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
-%     sach=plot(sortedSac{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
-%     cbh=colorbar;
-%     cbh.Label.String = 'Firing rate (Hz)';
-%     set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
-%     xlabel('Time shifted rasters')
-%     ylabel('Trial # - Trials sorted by reaction time')
-%     legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
-%     title('Recording sdf - Native alignement')
-%     axis('tight');
-%     close(gcf);
+    %     figure; hold on;
+    %     imagesc(1:size(indivTrials(:,plotIdx+boundShift(2)),2),1:size(indivTrials,1),indivTrials(:,plotIdx+boundShift(2)));
+    %     colormap(parula)
+    %     tgth=plot(sortedTgt{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
+    %     sach=plot(sortedSac{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
+    %     cbh=colorbar;
+    %     cbh.Label.String = 'Firing rate (Hz)';
+    %     set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
+    %     xlabel('Time shifted rasters')
+    %     ylabel('Trial # - Trials sorted by reaction time')
+    %     legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
+    %     title('Recording sdf - Native alignement')
+    %     axis('tight');
+    %     close(gcf);
 end
 
 %% plotting shifted rec trials
@@ -409,13 +409,13 @@ keepRec=cellfun(@(x) x>0, cellfun(@(x) size(x{1,1},1)>5,behavData(:,8),'UniformO
 behavData=behavData(keepRec,:);peth=peth(keepRec,:);neuralData=neuralData(keepRec,:,:);
 trials=trials(keepRec,:);timeShift=timeShift(keepRec,:);sortedRTidx=sortedRTidx(keepRec,:);
 % post SS trial NSSTs
-postSST_NSST=cellfun(@(x,y) ismember(x,y+1),behavData(:,1),behavData(:,2),'UniformOutput',false); %all SST 
+postSST_NSST=cellfun(@(x,y) ismember(x,y+1),behavData(:,1),behavData(:,2),'UniformOutput',false); %all SST
 %NCS trials
 NCSTrials=cellfun(@(x,y) x(end-size(y{1,2},1)+1:end),behavData(:,2),behavData(:,8),'UniformOutput',false);% only non-canceled ones
 postNCSST_NSST=cellfun(@(x,y) ismember(x,y+1),behavData(:,1),NCSTrials,'UniformOutput',false);% only non-canceled ones
 %get back SS trials preceding those NCSS trials
 preNCSST_SST=cellfun(@(x,y,z) x(ismember(x,y(z)-1)),NCSTrials,behavData(:,1),postNCSST_NSST,'UniformOutput',false);
-% get sorted NCS trial index 
+% get sorted NCS trial index
 NCSTrialsIdx=cellfun(@(x,y) ismember(x,y),NCSTrials,preNCSST_SST,'UniformOutput',false);% canceled ones
 [~,NCSTrialsIdxSort]=cellfun(@(x,y,z) sort(x(ismember(y-1,z))),sortedRTidx,behavData(:,1),preNCSST_SST,'UniformOutput',false);
 %CS trials
@@ -423,73 +423,75 @@ CSTrials=cellfun(@(x,y) x(1:end-size(y{1,2},1)),behavData(:,2),behavData(:,8),'U
 postCSST_NSST=cellfun(@(x,y) ismember(x,y+1),behavData(:,1),CSTrials,'UniformOutput',false); %only canceled ones
 %get back SS trials preceding those CSS trials
 preCSST_SST=cellfun(@(x,y,z) x(ismember(x,y(z)-1)),CSTrials,behavData(:,1),postCSST_NSST,'UniformOutput',false);
-% get sorted CS trial index 
+% get sorted CS trial index
 CSTrialsIdx=cellfun(@(x,y) ismember(x,y),CSTrials,preCSST_SST,'UniformOutput',false);% canceled ones
 [~,CSTrialsIdxSort]=cellfun(@(x,y,z) sort(x(ismember(y-1,z))),sortedRTidx,behavData(:,1),preCSST_SST,'UniformOutput',false);
 
-%first, just plot NSS trials with preceding SSD
+%% first, just plot NSS trials with preceding SSD
+% for rec=1:size(neuralData,1)
+%     % plot for trials following CS
+%     postCSST_NSST_PETH=peth{rec,1}(postCSST_NSST{rec}(sortedRTidx{rec,1}),:);
+%     trials{rec}=1:size(postCSST_NSST_PETH,1); %keep track of those removed
+%     nonNanTrials=~isnan(mean(postCSST_NSST_PETH,2));
+%     trials{rec}=trials{rec}(nonNanTrials); % remove nan trials
+%     indivTrials=postCSST_NSST_PETH(nonNanTrials,:);
+%
+%     figure; hold on;
+%     imagesc(1:size(indivTrials(:,plotIdx),2),1:size(indivTrials,1),indivTrials(:,plotIdx));
+%     colormap(parula)
+%
+%     ssds=behavData{rec,8}{1,1};
+%     ssds=ssds(CSTrialsIdx{rec}); ssds=ssds(CSTrialsIdxSort{rec}); %cull and sort
+%     ssds=ssds(trials{rec}); %cull again
+%
+%     plot(ssds-min(ssds),1:size(ssds,1),'rd')
+%
+%     % plot for trials following NCS
+%     postNCSST_NSST_PETH=peth{rec,1}(postNCSST_NSST{rec}(sortedRTidx{rec,1}),:);
+%     trials{rec}=1:size(postNCSST_NSST_PETH,1); %keep track of those removed
+%     nonNanTrials=~isnan(mean(postNCSST_NSST_PETH,2));
+%     trials{rec}=trials{rec}(nonNanTrials); % remove nan trials
+%     indivTrials=postNCSST_NSST_PETH(nonNanTrials,:);
+%
+%     figure; hold on;
+%     imagesc(1:size(indivTrials(:,plotIdx),2),1:size(indivTrials,1),indivTrials(:,plotIdx));
+%     colormap(parula)
+%
+%     ssds=behavData{rec,8}{1,2};
+%     ssds=ssds(NCSTrialsIdx{rec}); ssds=ssds(NCSTrialsIdxSort{rec}); %cull and sort
+%     ssds=ssds(trials{rec}); %cull again
+%
+%     plot(ssds-min(ssds),1:size(ssds,1),'rd')
+%     close all
+% end
+
+%%
 for rec=1:size(neuralData,1)
-    % plot for trials following CS
-    postCSST_NSST_PETH=peth{rec,1}(postCSST_NSST{rec}(sortedRTidx{rec,1}),:);
-    trials{rec}=1:size(postCSST_NSST_PETH,1); %keep track of those removed
-    nonNanTrials=~isnan(mean(postCSST_NSST_PETH,2));
+%     postSST_NSST_PETH=peth{rec,1}(postCSST_NSST{rec},:);
+      postSST_NSST_PETH=peth{rec,1}(postNCSST_NSST{rec},:);
+  trials{rec}=1:size(postSST_NSST_PETH,1); %keep track of those removed
+    nonNanTrials=~isnan(mean(postSST_NSST_PETH,2));
     trials{rec}=trials{rec}(nonNanTrials); % remove nan trials
-    indivTrials=postCSST_NSST_PETH(nonNanTrials,:);
-
-    figure; hold on;
-    imagesc(1:size(indivTrials(:,plotIdx),2),1:size(indivTrials,1),indivTrials(:,plotIdx));
-    colormap(parula)
-    
-    ssds=behavData{rec,8}{1,1};
-    ssds=ssds(CSTrialsIdx{rec}); ssds=ssds(CSTrialsIdxSort{rec}); %cull and sort
-    ssds=ssds(trials{rec}); %cull again
-
-    plot(ssds-min(ssds),1:size(ssds,1),'rd')
-    
-    % plot for trials following NCS
-    postNCSST_NSST_PETH=peth{rec,1}(postNCSST_NSST{rec}(sortedRTidx{rec,1}),:);
-    trials{rec}=1:size(postNCSST_NSST_PETH,1); %keep track of those removed
-    nonNanTrials=~isnan(mean(postNCSST_NSST_PETH,2));
-    trials{rec}=trials{rec}(nonNanTrials); % remove nan trials
-    indivTrials=postNCSST_NSST_PETH(nonNanTrials,:);
-
-    figure; hold on;
-    imagesc(1:size(indivTrials(:,plotIdx),2),1:size(indivTrials,1),indivTrials(:,plotIdx));
-    colormap(parula)
-    
-    ssds=behavData{rec,8}{1,2};
-    ssds=ssds(NCSTrialsIdx{rec}); ssds=ssds(NCSTrialsIdxSort{rec}); %cull and sort
-    ssds=ssds(trials{rec}); %cull again
-
-    plot(ssds-min(ssds),1:size(ssds,1),'rd')
-    close all
-end
-
-for rec=1:size(neuralData,1)
-    postCSST_NSST_PETH=peth{rec,1}(postCSST_NSST{rec},:);
-    trials{rec}=1:size(postCSST_NSST_PETH,1); %keep track of those removed
-    nonNanTrials=~isnan(mean(postCSST_NSST_PETH,2));
-    trials{rec}=trials{rec}(nonNanTrials); % remove nan trials
-    indivTrials=postCSST_NSST_PETH(nonNanTrials,:);
-%     peth_av=mean(zscore(indivTrials,0,2));
-    peth_av=mean(indivTrials);
-    pkCc=min([round(size(neuralData{rec,2,2}(nonNanTrials,:),1)/10) 5])*ones(size(neuralData{rec,2,2}(nonNanTrials,:),1),1);
-    thld=sum(min([round(size(neuralData{rec,2,2}(nonNanTrials,:),1)/10) 5])*ones(size(neuralData{rec,2,2}(nonNanTrials,:),1),1))/100;
+    indivTrials=postSST_NSST_PETH(nonNanTrials,:);
+        peth_av=mean(zscore(indivTrials,0,2));
+%     peth_av=mean(indivTrials);
+    pkCc=min([round(size(neuralData{rec,2,2}(sortedRTidx{rec,1}(nonNanTrials),:),1)/10) 5])*ones(size(neuralData{rec,2,2}(sortedRTidx{rec,1}(nonNanTrials),:),1),1);
+    thld=sum(min([round(size(neuralData{rec,2,2}(sortedRTidx{rec,1}(nonNanTrials),:),1)/10) 5])*ones(size(neuralData{rec,2,2}(sortedRTidx{rec,1}(nonNanTrials),:),1),1))/100;
     pkCcsum=sum(pkCc);
     iter=0;
     timeShift{rec,3}=zeros(size(indivTrials,1),1);
     boundShift=zeros(1,2);
     while abs(pkCcsum)>1 && iter<10
-        iter= iter + 1; 
-%         figure;hold on; plot(peth_av);
+        iter= iter + 1;
+        %         figure;hold on; plot(peth_av);
         for trial=1:size(indivTrials,1)
-%            plot(indivTrials(trial,:));
+            %            plot(indivTrials(trial,:));
             if pkCc(trial)>0
-%                 pkCc(trial) = min([siglag(zscore(indivTrials(trial,:),0,2),peth_av) pkCc(trial)]); %prevent further drifting
-                pkCc(trial) = min([siglag(indivTrials(trial,:),peth_av) pkCc(trial)]); %prevent further drifting
+                                pkCc(trial) = min([siglag(zscore(indivTrials(trial,:),0,2),peth_av) pkCc(trial)]); %prevent further drifting
+%                 pkCc(trial) = min([siglag(indivTrials(trial,:),peth_av) pkCc(trial)]); %prevent further drifting
             elseif pkCc(trial)<0
-%                 pkCc(trial) = max([siglag(zscore(indivTrials(trial,:),0,2),peth_av) pkCc(trial)]); % idem
-                pkCc(trial) = max([siglag(indivTrials(trial,:),peth_av) pkCc(trial)]); % idem
+                                pkCc(trial) = max([siglag(zscore(indivTrials(trial,:),0,2),peth_av) pkCc(trial)]); % idem
+%                 pkCc(trial) = max([siglag(indivTrials(trial,:),peth_av) pkCc(trial)]); % idem
             else
                 % well, don't touch it
             end
@@ -540,30 +542,29 @@ for rec=1:size(neuralData,1)
             indivTrials_realigned(trial,abs(max(shift_bounds))-pkCc(trial)+1:length(indivTrials(trial,:))+abs(max(shift_bounds))-pkCc(trial))=indivTrials(trial,:);
         end
         indivTrials=indivTrials_realigned; %(:,abs(min(pkCc))+1:size(indivTrials,2)+abs(min(pkCc)));
-%         peth_av=mean(zscore(indivTrials,0,2));
-        peth_av=mean(indivTrials);
+                peth_av=mean(zscore(indivTrials,0,2));
+%         peth_av=mean(indivTrials);
         pkCcsum=sum(abs(pkCc)); % to prevent execution stops mid-loop
     end
-    try
-        figure; hold on;
-        imagesc(1:size(indivTrials(:,plotIdx+boundShift(2)),2),1:size(indivTrials,1),indivTrials(:,plotIdx+boundShift(2)));
-        colormap(parula)
-        tgth=plot(sortedTgt{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,3}',1:size(timeShift{rec,3},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
-        sach=plot(sortedSac{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,3}',1:size(timeShift{rec,3},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
-        cbh=colorbar;
-        cbh.Label.String = 'Firing rate (Hz)';
-        set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
-        xlabel('Time shifted rasters')
-        ylabel('Trial # - Trials sorted by reaction time')
-        legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
-        title('Recording sdf - Native alignement')
-        axis('tight');
-        close(gcf);
-    catch
-        close(gcf);
-    end
+%     try
+%         figure; hold on;
+%         imagesc(1:size(indivTrials(:,plotIdx+boundShift(2)),2),1:size(indivTrials,1),indivTrials(:,plotIdx+boundShift(2)));
+%         colormap(parula)
+%         tgth=plot(sortedTgt{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,3}',1:size(timeShift{rec,3},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
+%         sach=plot(sortedSac{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,3}',1:size(timeShift{rec,3},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
+%         cbh=colorbar;
+%         cbh.Label.String = 'Firing rate (Hz)';
+%         set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
+%         xlabel('Time shifted rasters')
+%         ylabel('Trial # - Trials sorted by reaction time')
+%         legend([tgth sach],{'Target On', 'Saccade Onset'},'location','Southeast')
+%         title('Recording sdf - Native alignement')
+%         axis('tight');
+%         close(gcf);
+%     catch
+%         close(gcf);
+%     end
 end
-
 
 %% plotting shifted rec trials
 if plotdata
@@ -583,21 +584,26 @@ if plotdata
     % close(gcf);
 end
 
-postSST_NSST=cellfun(@(x,y) x(y),behavData(:,1),postSST_NSST,'UniformOutput',false);
-postNCSST_NSST=cellfun(@(x,y) x(y),behavData(:,1),postNCSST_NSST,'UniformOutput',false);
-postCSST_NSST=cellfun(@(x,y) x(y),behavData(:,1),postCSST_NSST,'UniformOutput',false);
+% postSST_NSST=cellfun(@(x,y) x(y),behavData(:,1),postSST_NSST,'UniformOutput',false);
+% postNCSST_NSST=cellfun(@(x,y) x(y),behavData(:,1),postNCSST_NSST,'UniformOutput',false);
+% postCSST_NSST=cellfun(@(x,y) x(y),behavData(:,1),postCSST_NSST,'UniformOutput',false);
 
 % preNSST_SST=cellfun(@(x,y,z) ismember(x,y(z)-1),behavData(:,2),postNCSST_NSST,trials,'UniformOutput',false);
 % preNSST_SST=cellfun(@(x,y,z) ismember(x,y(z)-1),NCSTrials,postNCSST_NSST,trials,'UniformOutput',false);
-preNSST_SST=cellfun(@(x,y,z) ismember(x,y(z)-1),NCSTrials,postCSST_NSST,trials,'UniformOutput',false);
+% preNSST_SST=cellfun(@(x,y,z) ismember(x,y(z)-1),NCSTrials,postCSST_NSST,trials,'UniformOutput',false);
 
 for rec=1:size(neuralData,1)
     try
-%       ssds=[behavData{rec,8}{1,1};behavData{rec,8}{1,2}];
-%       ssds=behavData{rec,8}{1,2};
-        ssds=behavData{rec,8}{1,1};
+        %       ssds=[behavData{rec,8}{1,1};behavData{rec,8}{1,2}];
+        %       ssds=behavData{rec,8}{1,2};
+%         ssds=behavData{rec,8}{1,1};
+%         timeShift{rec,4}=ceil((mean(sort(ssds))-sort(ssds))/10);
+%         timeShift{rec,4}=timeShift{rec,4}(preNSST_SST{rec});
+        
+        ssds=behavData{rec,8}{1,2};
+        ssds=ssds(NCSTrialsIdx{rec}); ssds=ssds(NCSTrialsIdxSort{rec}); %cull and sort
+        ssds=ssds(trials{rec}); %cull again
         timeShift{rec,4}=ceil((mean(sort(ssds))-sort(ssds))/10);
-        timeShift{rec,4}=timeShift{rec,4}(preNSST_SST{rec});
     catch
         continue
     end
@@ -608,9 +614,6 @@ end
 %         ssds=[behavData{rec,8}{1,1};behavData{rec,8}{1,2}];
 %         timeShift{rec,4}=ceil((mean(sort(ssds))'-sort(ssds))'/10);
 %         timeShift{rec,4}=timeShift{rec,4}(preNSST_SST{rec});
-
-
-
 
 
 
