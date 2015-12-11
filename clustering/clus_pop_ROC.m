@@ -40,7 +40,7 @@ if ~optimClusNum
     % figure; plot(davies_index(2:end),'r','linewidth',2)
     optimClusNum=find(davies_index(2:end)==max(davies_index(2:end)))+1;
 end
-% change to optimClusNum+1
-clusterIdx = kmeans(1-corr(cat(1,ROCarray{:})'),optimClusNum,'dist','cityblock');
+% changed to optimClusNum+1 for a garbage category
+clusterIdx = kmeans(1-corr(cat(1,ROCarray{:})'),optimClusNum+1,'dist','cityblock');
 % silhouette(1-corr(cell2mat(temp')'),clust)
 end

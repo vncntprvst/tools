@@ -122,35 +122,50 @@ unit_ids=cellfun(@(x) x.unit_id,data.(dataField).alldb);
 
 method='hclus';
 [clusterIdx{1},clustypes,clusavwf]=clus_pop(sacresps,bnorm_sacresps,rnorm_sacresps,method);
-[~,sortidx]=sort(clusterIdx{1});
-clusid=unique(clusterIdx{1});
+[~,sortidx{1}]=sort(clusterIdx{1});
+clusid{1}=unique(clusterIdx{1});
 
 % method 2/ (Manu's)
 clusterIdx{2} = clus_pop_ROC(sacrespsTrials,bslrespsTrials);
-[~,sortidx]=sort(clusterIdx{2});
-clusid=unique(clusterIdx{2});
+[~,sortidx{2}]=sort(clusterIdx{2});
+clusid{2}=unique(clusterIdx{2});
 % figure; plot(mean(sacresps(clusterIdx{2}==1,:)))
 % length(find(clusterIdx{2}==1))
 
 %population raster
 poprasthm=figure('name','population raster')
-subplot(1,20,1:9)
-imagesc(1:size(bnorm_sacresps,2),1:size(bnorm_sacresps,1),bnorm_sacresps)
-set(gca,'FontSize',18);
+subplot(1,31,1:9)
+imagesc(1:size(rnorm_sacresps,2),1:size(rnorm_sacresps,1),rnorm_sacresps)
+set(gca,'FontSize',15);
 xlabel('Time')
 ylabel('Neuron #')
 title('Unsorted')
-subplot(1,20,12:19)
-imagesc(1:size(bnorm_sacresps,2),1:size(bnorm_sacresps,1),bnorm_sacresps(sortidx,:))
-set(gca,'FontSize',18);
+subplot(1,31,12:19)
+imagesc(1:size(rnorm_sacresps,2),1:size(rnorm_sacresps,1),rnorm_sacresps(sortidx{1},:))
+set(gca,'FontSize',15);
 xlabel('Time')
 ylabel('Neuron #')
-title('Sorted by cluster')
-rangesph=subplot(1,20,20)
-clusrange=[zeros(sum(clusterIdx{2}==clusid(1)),5);ones(sum(clusterIdx{2}==clusid(2)),5);...
-    zeros(sum(clusterIdx{2}==clusid(3)),5);ones(sum(clusterIdx{2}==clusid(4)),5);zeros(sum(clusterIdx{2}==clusid(5)),5)];
+title('Method 1')
+rangesph=subplot(1,31,20)
+clusrange=[zeros(sum(clusterIdx{1}==clusid{1}(1)),5);ones(sum(clusterIdx{1}==clusid{1}(2)),5);...
+    zeros(sum(clusterIdx{1}==clusid{1}(3)),5);ones(sum(clusterIdx{1}==clusid{1}(4)),5)];
 imagesc(clusrange)
 set(gca,'XTick', [],'XTickLabel',[],'YTick', [],'YTickLabel',[]);
+subplot(1,31,23:30)
+imagesc(1:size(rnorm_sacresps,2),1:size(rnorm_sacresps,1),rnorm_sacresps(sortidx{2},:))
+set(gca,'FontSize',15);
+xlabel('Time')
+ylabel('Neuron #')
+title('Method 2')
+rangesph=subplot(1,31,31)
+clusrange=[zeros(sum(clusterIdx{2}==clusid{2}(1)),5);ones(sum(clusterIdx{2}==clusid{2}(2)),5);...
+    zeros(sum(clusterIdx{2}==clusid{2}(3)),5);ones(sum(clusterIdx{2}==clusid{2}(4)),5)];
+imagesc(clusrange)
+set(gca,'XTick', [],'XTickLabel',[],'YTick', [],'YTickLabel',[]);
+
+
+
+
 % cd('E:\BoxSync\Box Sync\Home Folder vp35\Sync\SommerLab\projects\countermanding\popclusters')
 % exportfigname='population raster';
 % %     print(gcf, '-dpng', '-noui', '-opengl','-r600', exportfigname);
