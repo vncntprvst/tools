@@ -12,8 +12,14 @@ switch nargin
     case 2
         optimClusNum=0;
 end
+%change baseline data in a 100ms average of actual (default 500ms) baseline
+
+medBlData=cellfun(@(cellBlData) cell2mat(...
+    arrayfun(@(idx) median(reshape(cellBlData(idx,:),[size(cellBlData(idx,:),2)/5 5])'),1:size(cellBlData,1),'UniformOutput',false)'),...
+    baselineData,'UniformOutput',false);
+medBlData=baselineData;
 %concatenate baseline and response data and calculate AUC
-ROCarray=cellfun(@(x,y) calcAUROC([x,y],[1 size(y,2)]),respData,baselineData, 'UniformOutput',false);
+ROCarray=cellfun(@(x,y) calcAUROC([x,y],[1 size(y,2)]),respData,medBlData, 'UniformOutput',false);
 %ROCarray: ROC data formatted in an mxn matrix, where m equals number of
 %neurons, n = rows of ROC data calculated by running calcAUROC on data
 

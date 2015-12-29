@@ -14,5 +14,9 @@ for i = 1:length(range)
     TPR(i) = temp2;
 end
    
-AUC = trapz(FPR,TPR);
+if isscalar(FPR) || isscalar(TPR)
+    AUC=0;
+else
+    AUC = trapz(FPR,TPR);
+end
 end
