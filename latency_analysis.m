@@ -404,8 +404,13 @@ end
 % end
 
 % let's shift FR of trials limited to those following a SST
-% keep behav data only from recordings with enough SSD
+% keep behav data only from recordings with enough SSD AND where number of
+% CST and NCST (behavData(:,8)) matches number of SS trials
+% (behavData(:,2))
 keepRec=cellfun(@(x) x>0, cellfun(@(x) size(x{1,1},1)>5,behavData(:,8),'UniformOutput',false));
+cellfun(@(x,y) size(x,2)==size(y{1,2},1),behavData(:,2),behavData(:,8),'UniformOutput',false);
+%%%% why are there so many of non-matching cells now? 
+
 behavData=behavData(keepRec,:);peth=peth(keepRec,:);neuralData=neuralData(keepRec,:,:);
 trials=trials(keepRec,:);timeShift=timeShift(keepRec,:);sortedRTidx=sortedRTidx(keepRec,:);
 % post SS trial NSSTs
