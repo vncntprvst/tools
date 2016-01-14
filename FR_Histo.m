@@ -26,16 +26,24 @@ spikeTimeIdx(spikeTimes)=1;
 SampleRes=Data.MetaTags.SampleRes;
 
 else
+    if ~iscell(fname)
+        fname={fname};
+    end
     for fl=1:size(fname,2)
         Data{fl}=load(fname{fl});
-        spikeTimeIdx{fl}=zeros(1,size(Data{fl}.Spikes.downSampled,2));
-        spikeTimeIdx{fl}(logical(Data{fl}.Spikes.downSampled))=1;
-        spikeTimes{fl}=find(Data{fl}.Spikes.downSampled);
-        SampleRes{fl}=1000; %Data{fl}.Spikes.samplingRate;
+        if size(Data{fl}.Spikes.channel,2)>1 & fl==1
+            str= num2str([Data{fl}.Spikes.channel{:}]');
+            ChNum= listdlg('PromptString','select channel to plot:','ListString',str);
+        end
+        spikeTimeIdx{fl}=zeros(1,size(Data{fl}.Spikes.downSampled{ChNum},2));
+        spikeTimeIdx{fl}(logical(Data{fl}.Spikes.downSampled{ChNum}))=1;
+        spikeTimes{fl}=find(Data{fl}.Spikes.downSampled{ChNum});
+        SampleRes{fl}=1000; %Data{fl}.Spikes.samplingRate(2);
     end
 end
 
 %% bin into 1 second bins and plot
+conditions={'Baseline','Female Interaction','Single again'};
 figure;
 for plot=1:size(Data,2)
     binSize=1000;
@@ -49,14 +57,13 @@ for plot=1:size(Data,2)
         'xticklabel',round(linspace(0,round(numBin*binSize/10000)*10,round(numBin*binSize/10000))),'TickDir','out');
     axis('tight');box off;
     xlabel('Time (sec.)')
-    ylabel('Firing rate (Hz)')
+    ylabel(['Channel ' num2str(Data{fl}.Spikes.channel{ChNum}) ' Firing rate (Hz)'])
     set(gca,'Color','white','FontSize',14,'FontName','calibri');
-    
+    title(conditions{plot});
     %% compare with spike density function (sigma=20)
 % sigma=1000;
 % convspikeTime = fullgauss_filtconv(spikeTimeIdx{plot},sigma,0).*1000;
 % hold on 
 % plot([zeros(1,sigma*3) convspikeTime zeros(1,sigma*3)])
-
 end
 
