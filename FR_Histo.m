@@ -44,26 +44,32 @@ end
 
 %% bin into 1 second bins and plot
 conditions={'Baseline','Female Interaction','Single again'};
-figure;
-for plot=1:size(Data,2)
+figure('position',[12,589,1150,406]);
+for plotN=1:size(Data,2)
     binSize=1000;
-    numBin=ceil(size(spikeTimeIdx{plot},2)/(SampleRes{plot}/1000)/binSize);
+    numBin=ceil(size(spikeTimeIdx{plotN},2)/(SampleRes{plotN}/1000)/binSize);
     % binspikeTime = histogram(double(spikeTimes{plot}), numBin); %plots directly histogram
-    [binspikeTime,binspikeTimeEdges] = histcounts(double(spikeTimes{plot}), numBin);
+    [binspikeTime,binspikeTimeEdges] = histcounts(double(spikeTimes{plotN}), numBin);
     
-    subplot(1,size(Data,2)+1,plot:(2*plot)-1)
+    ploth(plotN)=subplot(1,size(Data,2)*2-1,max([(plotN-1)*2 1]):max([(plotN-1)*2 1])+(plotN>1));
     bar(binspikeTimeEdges(1:end-1)+round(mean(diff(binspikeTimeEdges))/2),binspikeTime,'hist');
     set(gca,'xtick',linspace(0,round(numBin*binSize/10000)*10000,round(numBin*binSize/10000)),...
         'xticklabel',round(linspace(0,round(numBin*binSize/10000)*10,round(numBin*binSize/10000))),'TickDir','out');
     axis('tight');box off;
     xlabel('Time (sec.)')
-    ylabel(['Channel ' num2str(Data{fl}.Spikes.channel{ChNum}) ' Firing rate (Hz)'])
+    if plotN==1
+        ylabel(['Channel ' num2str(Data{fl}.Spikes.channel{ChNum}) ' Firing rate (Hz)'])
+    end
     set(gca,'Color','white','FontSize',14,'FontName','calibri');
-    title(conditions{plot});
+    title(conditions{plotN});
     %% compare with spike density function (sigma=20)
 % sigma=1000;
 % convspikeTime = fullgauss_filtconv(spikeTimeIdx{plot},sigma,0).*1000;
 % hold on 
 % plot([zeros(1,sigma*3) convspikeTime zeros(1,sigma*3)])
 end
+    % get max y lim
+    maxYLim=round(max(max(cell2mat(get(ploth,'ylim'))))/10)*10;
+    set(ploth,'ylim',[0 maxYLim]);
+    
 
