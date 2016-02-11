@@ -34,6 +34,8 @@ else
         if size(Data{fl}.Spikes.channel,2)>1 & fl==1
             str= num2str([Data{fl}.Spikes.channel{:}]');
             ChNum= listdlg('PromptString','select channel to plot:','ListString',str);
+        else
+            ChNum=1;
         end
         spikeTimeIdx{fl}=zeros(1,size(Data{fl}.Spikes.downSampled{ChNum},2));
         spikeTimeIdx{fl}(logical(Data{fl}.Spikes.downSampled{ChNum}))=1;
