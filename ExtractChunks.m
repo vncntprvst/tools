@@ -1,12 +1,29 @@
-% splitting arrays: create index of chunks to extract
-% then something like that
+% splits vector in multiple equal chunks at specified index
+function chuncks=ExtractChunks(data,chunkIndex,chunkSize)
 
-% ne0 = find(A~=0);                                   % Nonzero Elements
-% ix0 = unique([ne0(1) ne0(diff([0 ne0])>1)]);        % Non-Zero Segment Start Indices
-% eq0 = find(A==0);                                   % Zero Elements
-% ix1 = unique([eq0(1) eq0(diff([0 eq0])>1)]);        % Zero Segment Start Indices
-% ixv = sort([ix0 ix1 length(A)]);                    % Consecutive Indices Vector
-% for k1 = 1:length(ixv)-1
-%     section{k1} = A(ixv(k1):ixv(k1+1)-1);
+chunkWindow=int32(-round(chunkSize/2):round(chunkSize/2)-1);
+
+% brute force loop
+% chuncks=nan(length(chunkIndex),length(chunkWindow));
+% for chunkNum=1:length(chunkIndex)
+%     chuncks(chunkNum,:)=data(chunkIndex(chunkNum)-round(chunkSize/2):chunkIndex(chunkNum)+round(chunkSize/2)-1);
 % end
-% celldisp(section)
+
+%slightly better loop (fastest)
+% chuncks=nan(length(chunkIndex),length(chunkWindow));
+% for chunkBits=1:length(chunkWindow)
+%     chuncks(:,chunkBits)=data(chunkIndex+chunkWindow(chunkBits))';
+% end
+
+%no loop, but slightly slower
+% chunkFullIdx=arrayfun(@(x) x+chunkIndex,chunkWindow,'UniformOutput',false);
+% chuncks=data(reshape([chunkFullIdx{:}],1,length(chunkIndex)*chunkSize));
+% chuncks=reshape(chuncks,length(chunkIndex),chunkSize);
+
+% much slower
+% chuncks=cell2mat(arrayfun(@(x) data(x+chunkWindow),chunkIndex,'UniformOutput',false));
+% much much slower
+% chuncks=cell2mat(cellfun(@(x) data(x+chunkWindow),mat2cell(chunkIndex,ones(size(chunkIndex,1),1)),'UniformOutput',false));
+
+% figure; plot(mean(chuncks))
+end
