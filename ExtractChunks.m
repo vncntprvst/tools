@@ -10,10 +10,10 @@ chunkWindow=int32(-round(chunkSize/2):round(chunkSize/2)-1);
 % end
 
 %slightly better loop (fastest)
-% chuncks=nan(length(chunkIndex),length(chunkWindow));
-% for chunkBits=1:length(chunkWindow)
-%     chuncks(:,chunkBits)=data(chunkIndex+chunkWindow(chunkBits))';
-% end
+chuncks=nan(length(chunkIndex),length(chunkWindow));
+for chunkBits=1:length(chunkWindow)
+    chuncks(:,chunkBits)=data(chunkIndex+chunkWindow(chunkBits))';
+end
 
 %no loop, but slightly slower
 % chunkFullIdx=arrayfun(@(x) x+chunkIndex,chunkWindow,'UniformOutput',false);

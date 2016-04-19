@@ -1,17 +1,20 @@
 %Create video object
-fileName='PrV77_52_HSCam2016-03-17T19_08_11';
-videoInput = VideoReader(['C:\Data\Video\' fileName '.avi']);
+
+% fileName='PrV77_52_HSCam2016-03-17T19_08_11'; 
+[fileName,dirName] = uigetfile({'*.avi','AVI files';'*.*','All Files' },...
+    'Video files','C:\Data\Video');
+videoInput = VideoReader([dirName fileName]);
 
 %% Initialize parameters
 % Create a movie structure array, s.
 vidStruc = struct('cdata',zeros(videoInput.Height,videoInput.Width,3,'uint8'),'colormap',[]);
 
 % set initial time
-videoInput.CurrentTime = (27*60)+57; %27:55
+videoInput.CurrentTime = (13*60)+34; %13:34
 
 % Read one frame at a time using readFrame until the end of 3 sec epoch.
 % Append data from each video frame to the structure array.
-clipDuration=3;
+clipDuration=2;
 k = 1;
 while k<=(clipDuration*videoInput.FrameRate)
     vidStruc(k).cdata = readFrame(videoInput);
@@ -32,15 +35,15 @@ set(gca,'position',[0 0 videoInput.Width videoInput.Height]);
 movie(vidStruc,1,videoInput.FrameRate);
 
 %% Save movie
-% videoOutput = VideoWriter([fileName '_Trial_1.avi']);
-% videoOutput.FrameRate=videoInput.FrameRate  ;
-% open(videoOutput);
-% 
-% % add frames
-% set(0,'DefaultAxesColor','black')
-% figure('Color','black','Visible', 'off');
-% for framNum=1:videoInput.FrameRate*clipDuration
-%   image(vidStruc(int16(framNum)).cdata);
-%   vFrame=getframe;
-%   writeVideo(videoOutput,vFrame);
-% end
+videoOutput = VideoWriter([fileName '_Trial_X.avi']);
+videoOutput.FrameRate=videoInput.FrameRate  ;
+open(videoOutput);
+
+% add frames
+set(0,'DefaultAxesColor','black')
+figure('Color','black','Visible', 'off');
+for framNum=1:videoInput.FrameRate*clipDuration
+  image(vidStruc(int16(framNum)).cdata);
+  vFrame=getframe;
+  writeVideo(videoOutput,vFrame);
+end
