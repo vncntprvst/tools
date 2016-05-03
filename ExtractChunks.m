@@ -1,7 +1,11 @@
 % splits vector in multiple equal chunks at specified index
-function chuncks=ExtractChunks(data,chunkIndex,chunkSize)
+function chuncks=ExtractChunks(data,chunkIndex,chunkSize,timewindow)
 
-chunkWindow=int32(-round(chunkSize/2):round(chunkSize/2)-1);
+if strcmp(timewindow,'tzero')
+   chunkWindow=uint32(1:chunkSize); 
+else
+   chunkWindow=uint32(-round(chunkSize/2):round(chunkSize/2)-1);
+end
 
 % brute force loop
 % chuncks=nan(length(chunkIndex),length(chunkWindow));
