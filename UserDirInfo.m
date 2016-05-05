@@ -10,20 +10,25 @@ if regexp(compHostName(end),'\W') %the system command added a carriage return en
     compHostName=compHostName(1:end-1);
 end
 userinfo.slash = '\';
-% for macs: 
+% for macs:
 %     userinfo.slash = '/';
-if strcmp(compHostName,'Neuro-Wang-01')
+if strcmp(compHostName,'setup_souris')
+    userinfo.directory = 'C:\Data';
+    userinfo.user='Vincent';
+    userinfo.probemap='C:\Code\EphysDataProc\DataExport\probemaps';
+    userinfo.dbldir='';
+    userinfo.mapddataf='';
+    userinfo.syncdir='C:\Box Sync\Home Folder vp35\Sync\Wang Lab\Data\Ephys\export';
+elseif strcmp(compHostName,'Neuro-Wang-01')
+    userinfo.directory = 'D:\Data\Vincent\ephys\raw';
+    userinfo.probemap='D:\Code\EphysDataProc\DataExport\probemaps';
+    userinfo.dbldir='';
+    userinfo.mapddataf='';
     if strcmp(getenv('username'),'Vincent')
-        userinfo.directory = 'D:\Data\Vincent\ephys\raw';
         userinfo.user='Vincent';
-        userinfo.dbldir='';
-        userinfo.mapddataf='';
         userinfo.syncdir='D:\Data\Vincent\Sync\Box Sync\Home Folder vp35\Sync\Wang Lab\Data\Ephys\export';
     elseif strcmp(getenv('username'),'Michael')
-        userinfo.directory = 'D:\Data\Vincent\ephys\raw';
         userinfo.user='Michael';
-        userinfo.dbldir ='';
-        userinfo.mapddataf='';
         userinfo.syncdir='';
     end
 elseif strcmp(compHostName,'DangerZone')
@@ -35,7 +40,7 @@ elseif strcmp(compHostName,'DangerZone')
         userinfo.syncdir='E:\BoxSync\Box Sync\Home Folder vp35\Sync\CbTimingPredict\data';
     end
 end
-    
+
 %find if one or more remote drives are mapped
 [~,connlist]=system('net use');
 if logical(regexp(connlist,'OK'))
