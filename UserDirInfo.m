@@ -13,7 +13,7 @@ userinfo.slash = '\';
 % for macs:
 %     userinfo.slash = '/';
 if strcmp(compHostName,'setup_souris')
-    userinfo.directory = 'C:\Data';
+    userinfo.directory = 'C:\Data\raw';
     userinfo.user='Vincent';
     userinfo.probemap='C:\Code\EphysDataProc\DataExport\probemaps';
     userinfo.dbldir='';
