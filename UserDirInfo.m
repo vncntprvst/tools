@@ -6,12 +6,17 @@ userinfo=struct('directory',[],'slash',[],'user',[],'dbldir',[],...
 
 % find host name
 [~,compHostName]=system('hostname');
+
 if regexp(compHostName(end),'\W') %the system command added a carriage return ending
     compHostName=compHostName(1:end-1);
 end
-userinfo.slash = '\';
-% for macs:
-%     userinfo.slash = '/';
+
+if strfind(computer('arch'),'win')
+    userinfo.slash = '\';
+else
+    userinfo.slash = '/';
+end
+
 if strcmp(compHostName,'setup_souris')
     userinfo.directory = 'C:\Data\raw';
     userinfo.user='Vincent';
@@ -19,11 +24,16 @@ if strcmp(compHostName,'setup_souris')
     userinfo.dbldir='';
     userinfo.mapddataf='';
     userinfo.syncdir='C:\Box Sync\Home Folder vp35\Sync\Wang Lab\Data\Ephys\export';
+    userinfo.MPIDir='C:\Program Files\Microsoft MPI\Bin\';
+    userinfo.WinDirs='C:\Windows\system32;C:\Windows';
+    userinfo.ypipe='C:\Code\yes.txt';
 elseif strcmp(compHostName,'Neuro-Wang-01')
     userinfo.directory = 'D:\Data\Vincent\ephys\raw';
     userinfo.probemap='D:\Code\EphysDataProc\DataExport\probemaps';
     userinfo.dbldir='';
     userinfo.mapddataf='';
+    userinfo.MPIDir='C:\Program Files\Microsoft MPI\Bin\';
+    userinfo.WinDirs='C:\Windows\system32;C:\Windows';
     if strcmp(getenv('username'),'Vincent')
         userinfo.user='Vincent';
         userinfo.syncdir='D:\Data\Vincent\Sync\Box Sync\Home Folder vp35\Sync\Wang Lab\Data\Ephys\export';
@@ -31,6 +41,7 @@ elseif strcmp(compHostName,'Neuro-Wang-01')
         userinfo.user='Michael';
         userinfo.syncdir='';
     end
+    userinfo.ypipe='D:\Code\yes.txt';
 elseif strcmp(compHostName,'DangerZone')
     if strcmp(getenv('username'),'DangerZone')
         userinfo.directory = 'E:\data\Recordings\';
@@ -40,6 +51,12 @@ elseif strcmp(compHostName,'DangerZone')
         userinfo.syncdir='E:\BoxSync\Box Sync\Home Folder vp35\Sync\CbTimingPredict\data';
     end
 end
+
+% find environment directories
+[~,envInfo] = system('conda info -e');
+userinfo.envRootDir=cell2mat(regexp(envInfo,'(?<=spykc                    ).+?(?=\n)','match'));
+userinfo.envScriptDir=[userinfo.envRootDir userinfo.slash 'Scripts'];
+userinfo.envLibDir=[userinfo.envRootDir userinfo.slash 'Library' userinfo.slash 'bin'];
 
 %find if one or more remote drives are mapped
 [~,connlist]=system('net use');
