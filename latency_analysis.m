@@ -407,12 +407,12 @@ end
 % keep behav data only from recordings with enough SSD AND where number of
 % CST and NCST (behavData(:,8)) matches number of SS trials
 % (behavData(:,2))
-keepRec=cellfun(@(x) x>0, cellfun(@(x) size(x{1,1},1)>5,behavData(:,8),'UniformOutput',false));
-cellfun(@(x,y) size(x,2)==size(y{1,2},1),behavData(:,2),behavData(:,8),'UniformOutput',false);
+keepRec=find(cellfun(@(x) x>0, cellfun(@(x) size(x{1,1},1)>5,behavData(:,8),'UniformOutput',false),'UniformOutput',true) & ...
+cellfun(@(x,y) size(x,2)==size(y{1,2},1),behavData(:,2),behavData(:,8),'UniformOutput',true));
 %%%% why are there so many of non-matching cells now? 
 
 behavData=behavData(keepRec,:);peth=peth(keepRec,:);neuralData=neuralData(keepRec,:,:);
-trials=trials(keepRec,:);timeShift=timeShift(keepRec,:);sortedRTidx=sortedRTidx(keepRec,:);
+trials=trials(keepRec,:);sortedRTidx=sortedRTidx(keepRec,:);%timeShift=timeShift(keepRec,:);
 % post SS trial NSSTs
 postSST_NSST=cellfun(@(x,y) ismember(x,y+1),behavData(:,1),behavData(:,2),'UniformOutput',false); %all SST
 %NCS trials
@@ -484,7 +484,7 @@ for rec=1:size(neuralData,1)
     thld=sum(min([round(size(neuralData{rec,2,2}(sortedRTidx{rec,1}(nonNanTrials),:),1)/10) 5])*ones(size(neuralData{rec,2,2}(sortedRTidx{rec,1}(nonNanTrials),:),1),1))/100;
     pkCcsum=sum(pkCc);
     iter=0;
-    timeShift{rec,3}=zeros(size(indivTrials,1),1);
+    timeShift{keepRec(rec),3}=zeros(size(indivTrials,1),1);
     boundShift=zeros(1,2);
     while abs(pkCcsum)>1 && iter<10
         iter= iter + 1;
@@ -507,7 +507,7 @@ for rec=1:size(neuralData,1)
         %dampening only doesn't work well enough. So take out outliers
         %(unless that empties the trials)
         if sum(abs(pkCc)<2*std(pkCc))>0
-            indivTrials=indivTrials(abs(pkCc)<2*std(pkCc),:);trials{rec}=trials{rec}(abs(pkCc)<2*std(pkCc));timeShift{rec,3}=timeShift{rec,3}(abs(pkCc)<2*std(pkCc),:);
+            indivTrials=indivTrials(abs(pkCc)<2*std(pkCc),:);trials{rec}=trials{rec}(abs(pkCc)<2*std(pkCc));timeShift{keepRec(rec),3}=timeShift{keepRec(rec),3}(abs(pkCc)<2*std(pkCc),:);
             pkCc=pkCc(abs(pkCc)<2*std(pkCc),:);
         end
         % then set shift bounds
@@ -543,7 +543,7 @@ for rec=1:size(neuralData,1)
                     boundShift=boundShift+shift_bounds;
                 end
             end
-            timeShift{rec,3}(trial)=timeShift{rec,3}(trial)-pkCc(trial);% positive pkCc: later than the average peak, so pushed back.
+            timeShift{keepRec(rec),3}(trial)=timeShift{keepRec(rec),3}(trial)-pkCc(trial);% positive pkCc: later than the average peak, so pushed back.
             indivTrials_realigned(trial,abs(max(shift_bounds))-pkCc(trial)+1:length(indivTrials(trial,:))+abs(max(shift_bounds))-pkCc(trial))=indivTrials(trial,:);
         end
         indivTrials=indivTrials_realigned; %(:,abs(min(pkCc))+1:size(indivTrials,2)+abs(min(pkCc)));
@@ -555,8 +555,8 @@ for rec=1:size(neuralData,1)
 %         figure; hold on;
 %         imagesc(1:size(indivTrials(:,plotIdx+boundShift(2)),2),1:size(indivTrials,1),indivTrials(:,plotIdx+boundShift(2)));
 %         colormap(parula)
-%         tgth=plot(sortedTgt{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,3}',1:size(timeShift{rec,3},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
-%         sach=plot(sortedSac{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,3}',1:size(timeShift{rec,3},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
+%         tgth=plot(sortedTgt{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{keepRec(rec),3}',1:size(timeShift{keepRec(rec),3},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
+%         sach=plot(sortedSac{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{keepRec(rec),3}',1:size(timeShift{keepRec(rec),3},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
 %         cbh=colorbar;
 %         cbh.Label.String = 'Firing rate (Hz)';
 %         set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
@@ -576,8 +576,8 @@ if plotdata
     figure; hold on;
     imagesc(1:size(indivTrials(:,plotIdx+boundShift(2)),2),1:size(indivTrials,1),indivTrials(:,plotIdx+boundShift(2)));
     colormap(parula)
-    tgth=plot(sortedTgt{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
-    sach=plot(sortedSac{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{rec,1}',1:size(timeShift{rec,1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
+    tgth=plot(sortedTgt{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{keepRec(rec),1}',1:size(timeShift{keepRec(rec),1},1),'Marker','s','MarkerSize',4,'MarkerEdgeColor','k','MarkerFaceColor',[0.7, 0.9, 1]);
+    sach=plot(sortedSac{rec}(trials{rec})-round((preAlign-400)/10)+timeShift{keepRec(rec),1}',1:size(timeShift{keepRec(rec),1},1),'Marker','.','MarkerFaceColor',[0, 0.5, 0.1]);
     cbh=colorbar;
     cbh.Label.String = 'Firing rate (Hz)';
     set(gca,'xticklabel',-200:200:800,'TickDir','out','FontSize',10); %'xtick',1:100:max ... xticklabel misses 1st mark for some reason
@@ -602,23 +602,23 @@ for rec=1:size(neuralData,1)
         %       ssds=[behavData{rec,8}{1,1};behavData{rec,8}{1,2}];
         %       ssds=behavData{rec,8}{1,2};
 %         ssds=behavData{rec,8}{1,1};
-%         timeShift{rec,4}=ceil((mean(sort(ssds))-sort(ssds))/10);
-%         timeShift{rec,4}=timeShift{rec,4}(preNSST_SST{rec});
+%         timeShift{keepRec(rec),4}=ceil((mean(sort(ssds))-sort(ssds))/10);
+%         timeShift{keepRec(rec),4}=timeShift{keepRec(rec),4}(preNSST_SST{rec});
         
         ssds=behavData{rec,8}{1,2};
         ssds=ssds(NCSTrialsIdx{rec}); ssds=ssds(NCSTrialsIdxSort{rec}); %cull and sort
         ssds=ssds(trials{rec}); %cull again
-        timeShift{rec,4}=ceil((mean(sort(ssds))-sort(ssds))/10);
+        timeShift{keepRec(rec),4}=ceil((mean(sort(ssds))-sort(ssds))/10);
     catch
         continue
     end
 end
 
 
-%         timeShift{rec,3}=timeShift{rec,1}(postSST_NSST{rec});
+%         timeShift{keepRec(rec),3}=timeShift{keepRec(rec),1}(postSST_NSST{rec});
 %         ssds=[behavData{rec,8}{1,1};behavData{rec,8}{1,2}];
-%         timeShift{rec,4}=ceil((mean(sort(ssds))'-sort(ssds))'/10);
-%         timeShift{rec,4}=timeShift{rec,4}(preNSST_SST{rec});
+%         timeShift{keepRec(rec),4}=ceil((mean(sort(ssds))'-sort(ssds))'/10);
+%         timeShift{keepRec(rec),4}=timeShift{keepRec(rec),4}(preNSST_SST{rec});
 
 
 

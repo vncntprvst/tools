@@ -6,7 +6,7 @@ function [xctr xtach tach rPTc rPTe] = tachCM2(data, wbin, rect, crng)
 %
 % This function takes behavioral data from the countermanding task ---
 % reaction times (RTs) and hits/errors for each stop-signal delay
-% (SSD) tested --- and generates a tachometric curve based on them;
+% (uniqueSSDs) tested --- and generates a tachometric curve based on them;
 % that is, the probability of a correct cancellation as a function of
 % processing time (or cue-viewing time).  The curve is slightly
 % broader than the ideal curve obtained with the accelerated
@@ -14,9 +14,9 @@ function [xctr xtach tach rPTc rPTe] = tachCM2(data, wbin, rect, crng)
 %
 % Inputs:
 %
-%  data --> Nt x 3 matrix with SSD, RT and hit/error (1,0) values for
+%  data --> Nt x 3 matrix with uniqueSSDs, RT and hit/error (1,0) values for
 %           each trial; Nt is the total number of trials. No-stop
-%           trials must have SSD = Inf.
+%           trials must have uniqueSSDs = Inf.
 %
 %  wbin --> bin size used for the tachometric curve
 %           default: wbin = 20 ms
@@ -80,62 +80,85 @@ end
 %
 % extract data; data columns are
 %
-%  ssd (stop-signal delay) | RT | hit {0,1}
+%  uniqueSSDs (stop-signal delay) | RT | hit {0,1}
 %
-ssd1 = data(:,1);
+allSSDs = data(:,1);
 rt = data(:,2);
 hit = data(:,3);
 
-ssd = [unique(ssd1)]';
-Nssd = length(ssd);
+uniqueSSDs = [unique(allSSDs)]';
+jitter=0;
+while sum(diff(uniqueSSDs)==1)>0
+    uniqueSSDs([0 diff(uniqueSSDs)]==1)=uniqueSSDs([0 diff(uniqueSSDs)]==1)-1;
+    jitter=jitter+1;
+end
+uniqueSSDs=unique(uniqueSSDs);
+Nssd = length(uniqueSSDs);
 
 %
-% find numbers of correct and error trials per SSD
+% find numbers of correct and error trials per uniqueSSDs
 %
-Nc = zeros(1,Nssd);
-Nt = zeros(1,Nssd);
-for j=1:Nssd
-    ii = (ssd1 == ssd(j));
-    Nt(j) = sum(ii);
-    Nc(j) = sum(hit(ii));
+NumCorrTrial = zeros(1,Nssd);
+NumTrial = zeros(1,Nssd);
+for thatSSD=1:Nssd
+    SSDidx = allSSDs >= uniqueSSDs(thatSSD)-jitter &...
+            allSSDs <= uniqueSSDs(thatSSD)+jitter;
+    NumTrial(thatSSD) = sum(SSDidx);
+    NumCorrTrial(thatSSD) = sum(hit(SSDidx));
 end
-Ne = Nt - Nc;
+% Ne = NumTrial - NumCorrTrial;
 
 %
 % set aside RTs from no-stop trials
 %
-ii = find(ssd1 == Inf & hit == 1);
-rtns = rt(ii);
-Nns = length(rtns);
-xlo = min(rtns) - floor(max(ssd(ssd < Inf))) - 50;
+SSDidx = allSSDs == Inf & hit == 1;
+rtns = rt(SSDidx);
+NumNST = length(rtns);
+xlo = min(rtns) - floor(max(uniqueSSDs(uniqueSSDs < Inf))) - 50;
 xhi = ceil(max(rtns));
-xtach = [xlo:1:xhi];
+xtach = xlo:1:xhi;
 
 %
 % get rPT distributions in stop and no-stop trials
 %
 rPTce = zeros(size(xtach));
 rPTe = zeros(size(xtach));
-for j=1:Nssd
-    if ssd(j) < Inf
+for thatSSD=1:Nssd
+    if uniqueSSDs(thatSSD) < Inf
         % get rPT distribution from non-cancelled trials
-        ii = find(ssd1 == ssd(j) & hit == 0);
-        rPT = rt(ii) - ssd(j);
+        SSDidx = allSSDs >= uniqueSSDs(thatSSD)-jitter &...
+            allSSDs <= uniqueSSDs(thatSSD)+jitter & hit == 0;
+        rPT = rt(SSDidx) - uniqueSSDs(thatSSD);
         rPT1 = local_hist(rPT, xtach, wbin);
         rPTe = rPTe + rPT1;
         % rPTs in no-stop distributions include both correct and errors
-        rPT = rtns - ssd(j);
+        rPT = rtns - uniqueSSDs(thatSSD);
         rPT2 = local_hist(rPT, xtach, wbin);
         % scale to actual number of stop trials attempted
-        rPT2 = rPT2*Nt(j)/Nns;
+        rPT2 = rPT2*NumTrial(thatSSD)/NumNST;
         rPTce = rPTce + rPT2;
     end
 end
+% rPTce = gauss_filtconv(rPTce,10);
+% rPTe = gauss_filtconv(rPTe,10);
 
-%
 % distribution of rPTs for correct (cancelled) stop trials
 rPTc = rPTce - rPTe;
+rPTc(rPTc<0)=0;
+rPTc(1:find(rPTe>0,1))=0;
+% figure;hold on;
+% plot(rPTce);plot(rPTe);plot(rPTc);
 
+% numBin=ceil(length(find(rPTce))/5);
+% [binrPTce,binrPTceEdges] = histcounts(find(rPTce), numBin);
+% figure;
+% bar(binrPTceEdges(1:end-1)+round(mean(diff(binrPTceEdges))/2),binrPTce,'hist');
+% 
+% figure;hold on;
+% bar(rPT1)
+% bar(rPTce)
+% bar(rPTe)
+% bar(rPTc)
 %
 % compute the tachometric curve this way; it's less noisy;
 % we want rc/(rc + re) = rc/rns, so
@@ -143,10 +166,20 @@ rPTc = rPTce - rPTe;
 y = rPTe./(rPTce);
 tach = 1 - y;
 
-%
+% figure; 
+% subplot(1,2,1),hold on 
+% plot(xtach,rPTc)
+% plot(xtach,rPTe)
+% subplot(1,2,2),hold on 
+% plot(xtach,fullgauss_filtconv(rPTc,5,0,'same'))
+% plot(xtach,fullgauss_filtconv(rPTe,5,0,'same'))
+% 
+% figure;
+% plot(xtach,[0 abs(round(diff(fullgauss_filtconv(rPTc,5,0,'same')),4).*1000)])
+
 % eliminate values before final upswing
 %
-lastswingpeak=bwlabel((abs(round(diff(fullgauss_filtconv(rPTc,5,0,'same')),4).*1000))<5 & rPTc(1:end-1)>0.4*max(rPTc));
+lastswingpeak=bwlabel((abs(round(diff(fullgauss_filtconv(rPTc,5,0,'same')),4).*1000))<50 & rPTc(1:end-1)>0.4*max(rPTc));
 revfindpk=1;
 try
     while find(lastswingpeak==max(lastswingpeak),1)-find(lastswingpeak==(max(lastswingpeak)-revfindpk),1)<40
@@ -199,16 +232,16 @@ end
 ictr = [ictr ictr+1];
 xctr = xtach1(ictr);
 
-if isnan(xctr) | mean(xctr)<40 | mean(xctr)>110
-    % possible incorrect lastnegv estimate
-
 %smooth values   
-rPTce_s=fullgauss_filtconv(rPTce,3,0,'same');
-rPTe_s=fullgauss_filtconv(rPTe,3,0,'same');
+rPTce_s=gauss_filtconv(rPTce,5);%fullgauss_filtconv(rPTce,3,0,'same');
+rPTe_s=gauss_filtconv(rPTe,5);%fullgauss_filtconv(rPTe,3,0,'same');
 rPTc_s=rPTce_s-rPTe_s;
     
 y_s = rPTe_s./(rPTce_s);
 tach_s = 1 - y_s;
+
+if isnan(xctr) | mean(xctr)<40 | mean(xctr)>110
+    % possible incorrect lastnegv estimate
 
     % eliminate values before final upswing
     %
@@ -320,16 +353,16 @@ function [nx] = local_hist(x, xbin, wid)
 nx = NaN(size(xbin));
 hwid = wid/2;
 Nxbin = length(xbin);
-for j=1:Nxbin
-    xlo = xbin(j) - hwid;
-    xhi = xbin(j) + hwid;
-    if j == 1
+for NxBinNum=1:Nxbin
+    xlo = xbin(NxBinNum) - hwid;
+    xhi = xbin(NxBinNum) + hwid;
+    if NxBinNum == 1
         xlo = -Inf;
-    elseif j == Nxbin
+    elseif NxBinNum == Nxbin
         xhi = Inf;
     end
     ii = (x > xlo) & (x <= xhi);
-    nx(j) = sum(ii);
+    nx(NxBinNum) = sum(ii);
 end
 
 
