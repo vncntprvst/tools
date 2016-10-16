@@ -18,7 +18,7 @@ else
 end
 
 if strcmp(compHostName,'setup_souris')
-    userinfo.directory = 'C:\Data\raw';
+    userinfo.directory = 'E:\Data\raw';
     userinfo.user='Vincent';
     userinfo.probemap='C:\Code\EphysDataProc\DataExport\probemaps';
     userinfo.dbldir='';

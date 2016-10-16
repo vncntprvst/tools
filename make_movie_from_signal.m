@@ -1,16 +1,24 @@
-%Create video object
+%% get data
+fileName='example';
+
 % reading actual video:
-% vidObj = VideoReader('C:\Data\Video\video_timestamped2016-01-27T19_24_38.avi'); 
-% vidObj = VideoReader('C:\Basler\Video\acA640-750um__21814121__20160128_201457757.avi');
-fileName='PrV77_32__2016_01_30_02_09_00_OEph_CAR';
-load([fileName '.mat'])
+% vidObj = VideoReader([fileName '.avi']); 
 
+% reading from file 
+% load([fileName '.mat'])
 
-%% Initialize parameters
+% generating example data: chirp
+samplingRate=1000;
+Time = 0:1/samplingRate:2;
+data = chirp(Time,100,1,200,'q');
+figure;
+spectrogram(data,128,120,128,1E3,'yaxis')
+title('Quadratic chirp')
+
+%% Create video object and Initialize parameters
 vidObj = VideoWriter([fileName '.avi']);
-vidObj.FrameRate=20;
+vidObj.FrameRate=25;
 open(vidObj);
-data=Spikes.downSampled;
 
 %% add frames
 set(0,'DefaultAxesColor','black')
@@ -21,8 +29,8 @@ for framNum=1:vidObj.FrameRate*10 %10 secondes
 %   writeVideo(aviobj,f);
 
   %Or plot vector, then Add to Movie:
-  plot(data(ChN,(Spikes.samplingRate(2)/25)*(framNum-1)+1:(Spikes.samplingRate(2)/25)*(framNum)+1)); 
-  ylim([min(data(ChN,1:Spikes.samplingRate(2)*10+1)) max(data(ChN,1:Spikes.samplingRate(2)*10+1))]);
+  plot(data((samplingRate/vidObj.FrameRate)*(framNum-1)+1:(samplingRate/vidObj.FrameRate)*(framNum)+1)); 
+  ylim([min(data(1:samplingRate*10+1)) max(data(1:samplingRate*10+1))]);
 %   axis('tight');box off;
   f = getframe;
   writeVideo(vidObj,f);

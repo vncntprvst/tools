@@ -26,6 +26,7 @@ for chunkBits=1:length(chunkWindow)
         chunkWindow(chunkBits))';
 end
 chuncks(isnan(chuncks))=0;
+% chuncks=rot90(chuncks,2);
 %no loop, but slightly slower
 % chunkFullIdx=arrayfun(@(x) x+chunkIndex,chunkWindow,'UniformOutput',false);
 % chuncks=data(reshape([chunkFullIdx{:}],1,length(chunkIndex)*chunkSize));
