@@ -2,7 +2,7 @@
 % [fname,dname] = uigetfile({'*.nev','NEV Data Format';...
 %     '*.*','All Files' },'Data folder','C:\Data');
 [fname,dname] = uigetfile({'*.*','All Files' },'Data folder','C:\Data\export',...
-            'MultiSelect','on');
+    'MultiSelect','on');
 if iscell(fname)
     fileFormat=fname{1}(end-3:end);
 else
@@ -12,19 +12,19 @@ if strfind(fileFormat,'nev')
     Data=openNEV('read', [dname '\' fname]);
     
     %% select unit to plot
-str= num2str(linspace(1,double(max(Data.Data.Spikes.Unit)),max(Data.Data.Spikes.Unit))');
-unitSelected = listdlg('PromptString','select unit to plot:',...
-                'SelectionMode','single',...
-                'ListString',str);
-            
+    str= num2str(linspace(1,double(max(Data.Data.Spikes.Unit)),max(Data.Data.Spikes.Unit))');
+    unitSelected = listdlg('PromptString','select unit to plot:',...
+        'SelectionMode','single',...
+        'ListString',str);
+    
     %% get spike times and change it to binary array
-logicalUnitSelected=Data.Data.Spikes.Unit==unitSelected;
-spikeTimes=Data.Data.Spikes.TimeStamp(logicalUnitSelected);
-spikeTimeIdx=zeros(1,max(Data.Data.Spikes.TimeStamp));
-spikeTimeIdx(spikeTimes)=1;
-
-SampleRes=Data.MetaTags.SampleRes;
-
+    logicalUnitSelected=Data.Data.Spikes.Unit==unitSelected;
+    spikeTimes=Data.Data.Spikes.TimeStamp(logicalUnitSelected);
+    spikeTimeIdx=zeros(1,max(Data.Data.Spikes.TimeStamp));
+    spikeTimeIdx(spikeTimes)=1;
+    
+    SampleRes=Data.MetaTags.SampleRes;
+    
 else
     if ~iscell(fname)
         fname={fname};
@@ -65,13 +65,29 @@ for plotN=1:size(Data,2)
     set(gca,'Color','white','FontSize',14,'FontName','calibri');
     title(conditions{plotN});
     %% compare with spike density function (sigma=20)
-% sigma=1000;
-% convspikeTime = fullgauss_filtconv(spikeTimeIdx{plot},sigma,0).*1000;
-% hold on 
-% plot([zeros(1,sigma*3) convspikeTime zeros(1,sigma*3)])
-end
-    % get max y lim
-    maxYLim=round(max(max(cell2mat(get(ploth,'ylim'))))/10)*10;
-    set(ploth,'ylim',[0 maxYLim]);
+    % sigma=1000;
+    % convspikeTime = fullgauss_filtconv(spikeTimeIdx{plot},sigma,0).*1000;
+ 
+    sigma = 5;
+    causal=0;
+    constraint = 'valid'; %10/28/15 new attempts at constraint 'same', not 'valid'
     
+    ksize = 6*sigma;
+    x = linspace(-ksize / 2, ksize / 2, ksize+1);
+    gaussFilter = (1/(sqrt(2*pi)*sigma)) * exp(-x .^ 2 / (2 * sigma ^ 2)); % same as normpdf(x,0,sigma)
+    if causal
+        gaussFilter(x<0)=0; % causal kernel
+    end
+    gaussFilter = gaussFilter / sum (gaussFilter); % normalize
+    filtvals = conv (spikeTimeIdx{plot}, gaussFilter, constraint); % filter vector data
+    convspikeTime = filtvals.*1000;
+    
+    % hold on
+    % plot([zeros(1,sigma*3) convspikeTime zeros(1,sigma*3)])
+    
+end
+% get max y lim
+maxYLim=round(max(max(cell2mat(get(ploth,'ylim'))))/10)*10;
+set(ploth,'ylim',[0 maxYLim]);
+
 
