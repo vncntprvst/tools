@@ -1,6 +1,13 @@
 *.asv
 *.zip
 
+# subfolders
+drtoolbox
+semblance
+tSNE_matlab
+gramm
+Singular Spectrum Decomposition
+
 #################
 ## Eclipse
 #################
@@ -130,7 +137,6 @@ Thumbs.db
 
 # Folder config file
 Desktop.ini
-
 
 #############
 ## Python
