@@ -154,8 +154,8 @@ function [ ori_vals, df, pvals, surrogval ] = statcond( data, varargin )
     if nargin < 1
         help statcond;
         return;
-    end;
-    try warning('off', 'MATLAB:divideByZero'); catch, end;    
+    end
+    try warning('off', 'MATLAB:divideByZero'); catch, end    
     
     if exist('finputcheck')
         g = finputcheck( varargin, { 'naccu'      'integer'   [1 Inf]             200;
@@ -187,7 +187,7 @@ function [ ori_vals, df, pvals, surrogval ] = statcond( data, varargin )
         if ~isfield(g, 'structoutput'), g.structoutput = 'on'; end;
         if ~isfield(g, 'returnresamplingarray'),   g.returnresamplingarray = 'off'; end;
     end;
-    if ~isempty(g.mode), g.method = g.mode; end;
+    if isfield(g,'mode') & ~isempty(g.mode), g.method = g.mode; end;
     
     if strcmpi(g.method, 'parametric'), g.method = 'param'; end;
     if strcmpi(g.method, 'permutation'), g.method = 'perm'; end;

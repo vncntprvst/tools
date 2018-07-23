@@ -41,7 +41,7 @@ function A = catstruct(varargin)
 
 %   NOTE: This function relies on unique. Matlab changed the behavior of
 %   its set functions since 2013a, so this might cause some backward
-%   compatibility issues when dulpicated fieldnames are found.
+%   compatibility issues when duplicated fieldnames are found.
 %
 %   See also CAT, STRUCT, FIELDNAMES, STRUCT2CELL, ORDERFIELDS
 
@@ -68,8 +68,8 @@ function A = catstruct(varargin)
 narginchk(1,Inf) ;
 N = nargin ;
 
-if ~isstruct(varargin{end}),
-    if isequal(varargin{end},'sorted'),
+if ~isstruct(varargin{end})
+    if isequal(varargin{end},'sorted')
         narginchk(2,Inf) ;
         sorted = 1 ;
         N = N-1 ;
@@ -91,13 +91,13 @@ FN = cell(N,1) ;
 VAL = cell(N,1) ;
 
 % parse the inputs
-for ii=1:N,
+for ii=1:N
     X = varargin{ii} ;
-    if ~isstruct(X),
+    if ~isstruct(X)
         error('catstruct:InvalidArgument',['Argument #' num2str(ii) ' is not a structure.']) ;
     end
     
-    if ~isempty(X),
+    if ~isempty(X)
         % empty structs are ignored
         if ii > 1 && ~isempty(sz0)
             if ~isequal(size(X), sz0)
@@ -116,10 +116,10 @@ end
 if NonEmptyInputsN == 0
     % all structures were empty
     A = struct([]) ;
-elseif NonEmptyInputsN == 1,
+elseif NonEmptyInputsN == 1
     % there was only one non-empty structure
     A = varargin{NonEmptyInputs} ;
-    if sorted,
+    if sorted
         A = orderfields(A) ;
     end
 else
@@ -135,12 +135,12 @@ else
     % accept the 'last' input, use the following line instead
     % [UFN,ind] = unique(FN) ; % earlier ML versions, like 6.5
     
-    if numel(UFN) ~= numel(FN),
+    if numel(UFN) ~= numel(FN)
         warning('catstruct:DuplicatesFound','Fieldnames are not unique between structures.') ;
         sorted = 1 ;
     end
     
-    if sorted,
+    if sorted
         VAL = VAL(ind,:) ;
         FN = FN(ind,:) ;
     end

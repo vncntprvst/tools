@@ -44,25 +44,25 @@ function [res precomp ] = surrogdistrib(data, varargin)
 if nargin < 1
     help surrogdistrib,
     return;
-end;
+end
 
 if ~strcmpi(varargin{1}, 'precomp')
     opt = finputcheck(varargin, { 'naccu'      'integer'   [1 Inf]             1;
                                   'method'     'string'    { 'perm','permutation','bootstrap' }  'perm';
                                   'pairing'    'string'    { 'on','off' }      'on';
                                   'precomp'    'cell'      {} {} }, 'surrogdistrib');
-    if isstr(opt), error(opt); end;
-    if strcmpi(opt.method, 'permutation'), opt.method = 'perm'; end;
+    if isstr(opt), error(opt); end
+    if strcmpi(opt.method, 'permutation'), opt.method = 'perm'; end
     if strcmpi(opt.method, 'bootstrap'), bootflag = 1;
     else                                 bootflag = 0;
-    end;
+    end
     if strcmpi(opt.pairing, 'on')
          pairflag = 1;
     else pairflag = 0;
-    end;
+    end
 else
     opt.precomp = varargin{2};
-end;
+end
 
 % concatenate data
 % ----------------
