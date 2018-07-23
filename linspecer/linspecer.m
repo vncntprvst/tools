@@ -37,6 +37,7 @@
 % figure; imagesc(A); % default colormap
 % figure; imagesc(A); colormap(linspecer); % linspecer colormap
 % 
+%   See also NDHIST, NHIST, PLOT, COLORMAP, 43700-cubehelix-colormaps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % by Jonathan Lansey, March 2009-2013 – Lansey at gmail.com               %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -60,9 +61,12 @@
 function lineStyles=linspecer(N,varargin)
 
 if nargin==0 % return a colormap
-    lineStyles = linspecer(64);
-%     temp = [temp{:}];
-%     lineStyles = reshape(temp,3,255)';
+    lineStyles = linspecer(128);
+    return;
+end
+
+if ischar(N)
+    lineStyles = linspecer(128,N);
     return;
 end
 
@@ -73,6 +77,7 @@ end
 
 % interperet varagin
 qualFlag = 0;
+colorblindFlag = 0;
 
 if ~isempty(varargin)>0 % you set a parameter?
     switch lower(varargin{1})
@@ -88,35 +93,64 @@ if ~isempty(varargin)>0 % you set a parameter?
         case {'sequential','seq'}
             lineStyles = colorm(N);
             return;
+        case {'white','whitefade'}
+            lineStyles = whiteFade(N);return;
+        case 'red'
+            lineStyles = whiteFade(N,'red');return;
+        case 'blue'
+            lineStyles = whiteFade(N,'blue');return;
+        case 'green'
+            lineStyles = whiteFade(N,'green');return;
+        case {'gray','grey'}
+            lineStyles = whiteFade(N,'gray');return;
+        case {'colorblind'}
+            colorblindFlag = 1;
         otherwise
             warning(['parameter ''' varargin{1} ''' not recognized']);
     end
 end      
-      
+% *.95
 % predefine some colormaps
   set3 = colorBrew2mat({[141, 211, 199];[ 255, 237, 111];[ 190, 186, 218];[ 251, 128, 114];[ 128, 177, 211];[ 253, 180, 98];[ 179, 222, 105];[ 188, 128, 189];[ 217, 217, 217];[ 204, 235, 197];[ 252, 205, 229];[ 255, 255, 179]}');
-set1JL = brighten(colorBrew2mat({[228, 26, 28];[ 55, 126, 184];[ 77, 175, 74];[ 255, 127, 0];[ 255, 237, 111]*.95;[ 166, 86, 40];[ 247, 129, 191];[ 153, 153, 153];[ 152, 78, 163]}'));
-set1 = brighten(colorBrew2mat({[ 55, 126, 184]*.95;[228, 26, 28];[ 77, 175, 74];[ 255, 127, 0];[ 152, 78, 163]}),.8);
+set1JL = brighten(colorBrew2mat({[228, 26, 28];[ 55, 126, 184]; [ 77, 175, 74];[ 255, 127, 0];[ 255, 237, 111]*.85;[ 166, 86, 40];[ 247, 129, 191];[ 153, 153, 153];[ 152, 78, 163]}'));
+set1 = brighten(colorBrew2mat({[ 55, 126, 184]*.85;[228, 26, 28];[ 77, 175, 74];[ 255, 127, 0];[ 152, 78, 163]}),.8);
+
+% colorblindSet = {[215,25,28];[253,174,97];[171,217,233];[44,123,182]};
+colorblindSet = {[215,25,28];[253,174,97];[171,217,233]*.8;[44,123,182]*.8};
 
 set3 = dim(set3,.93);
 
-switch N
-    case 1
-        lineStyles = { [  55, 126, 184]/255};
-    case {2, 3, 4, 5 }
-        lineStyles = set1(1:N);
-    case {6 , 7, 8, 9}
-        lineStyles = set1JL(1:N)';
-    case {10, 11, 12}
-        if qualFlag % force qualitative graphs
-            lineStyles = set3(1:N)';
-        else % 10 is a good number to start with the sequential ones.
+if colorblindFlag
+    switch N
+        %     sorry about this line folks. kind of legacy here because I used to
+        %     use individual 1x3 cells instead of nx3 arrays
+        case 4
+            lineStyles = colorBrew2mat(colorblindSet);
+        otherwise
+            colorblindFlag = false;
+            warning('sorry unsupported colorblind set for this number, using regular types');
+    end
+end
+if ~colorblindFlag
+    switch N
+        case 1
+            lineStyles = { [  55, 126, 184]/255};
+        case {2, 3, 4, 5 }
+            lineStyles = set1(1:N);
+        case {6 , 7, 8, 9}
+            lineStyles = set1JL(1:N)';
+        case {10, 11, 12}
+            if qualFlag % force qualitative graphs
+                lineStyles = set3(1:N)';
+            else % 10 is a good number to start with the sequential ones.
+                lineStyles = cmap2linspecer(colorm(N));
+            end
+        otherwise % any old case where I need a quick job done.
             lineStyles = cmap2linspecer(colorm(N));
-        end
-otherwise % any old case where I need a quick job done.
-    lineStyles = cmap2linspecer(colorm(N));
+    end
 end
 lineStyles = cell2mat(lineStyles);
+
 end
 
 % extra functions
@@ -184,3 +218,44 @@ for ii=1:3
 end
 cmap = flipud(cmap/255);
 end
+
+function cmap = whiteFade(varargin)
+n = 100;
+if nargin>0
+    n = varargin{1};
+end
+
+thisColor = 'blue';
+
+if nargin>1
+    thisColor = varargin{2};
+end
+switch thisColor
+    case {'gray','grey'}
+        cmapp = [255,255,255;240,240,240;217,217,217;189,189,189;150,150,150;115,115,115;82,82,82;37,37,37;0,0,0];
+    case 'green'
+        cmapp = [247,252,245;229,245,224;199,233,192;161,217,155;116,196,118;65,171,93;35,139,69;0,109,44;0,68,27];
+    case 'blue'
+        cmapp = [247,251,255;222,235,247;198,219,239;158,202,225;107,174,214;66,146,198;33,113,181;8,81,156;8,48,107];
+    case 'red'
+        cmapp = [255,245,240;254,224,210;252,187,161;252,146,114;251,106,74;239,59,44;203,24,29;165,15,21;103,0,13];
+    otherwise
+        warning(['sorry your color argument ' thisColor ' was not recognized']);
+end
+
+cmap = interpomap(n,cmapp);
+end
+
+% Eat a approximate colormap, then interpolate the rest of it up.
+function cmap = interpomap(n,cmapp)
+    x = linspace(1,n,size(cmapp,1));
+    xi = 1:n;
+    cmap = zeros(n,3);
+    for ii=1:3
+        cmap(:,ii) = pchip(x,cmapp(:,ii),xi);
+    end
+    cmap = (cmap/255); % flipud??
+end
+
+
+

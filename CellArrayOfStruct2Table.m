@@ -1,5 +1,7 @@
-
 % convert cell array of similar structures to table
 
-data.gsdata.alldb=cellfun(@(x) struct2table(x), data.gsdata.alldb,'UniformOutput',false);
-data.gsdata.alldb=vertcat(data.gsdata.alldb{:});
+% data=load([dataset '.mat']); %cDn_cmdata.mat  top_cortex_cmdata.mat
+data.cmdata.alldb=cellfun(@(x) struct2table(x), data.cmdata.alldb,'UniformOutput',false);
+data.cmdata.alldb=vertcat(data.cmdata.alldb{:});
+
+% save(dataset,'data','-v7.3')
